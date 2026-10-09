@@ -68,5 +68,15 @@
     "path": "/home/debian/osprey-port/lineage/system/netd",
     "branch": "lineage-22.1-mainline",
     "commit": "d80b12030a39103f688c89166fc4035b4dc1183f"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/av",
+    "branch": "lineage-22.1-mainline",
+    "commit": "ea2c16eb0d8037693028dfe486e2a20a21f24071"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/native",
+    "branch": "lineage-22.1-mainline",
+    "commit": "7a0527c3e6e841f5c34cf48acb85b4a9587609f9"
   }
 ]
