@@ -1,6 +1,6 @@
 # Osprey Android 15 mainline
 
-Curated source package through v56. Component commits are pinned in
+Curated source package through v57. Component commits are pinned in
 component-revisions.json, all on lineage-22.1-mainline. This is a new clean
 repository: the historical probe repository and its earlier commits are not
 part of the publication.
@@ -18,9 +18,14 @@ a complete ROM from nothing. Do not run prepare-android.py without those
 inputs: it recreates its dedicated ramdisk work directory.
 
 Runtime compatibility fixes: upstream processgroup/RefBase error handling and
-strict netd BPF/bandwidth initialization have been restored in source. The
-phone still runs the earlier binaries until a rebuild and deployment.
-These source changes have not been build- or boot-verified yet.
+strict netd BPF/bandwidth initialization have been restored in source. The rebuilt libraries and netd were deployed and survived a fresh boot on
+osprey: boot_completed=1, Settings and Calculator launch, Wi-Fi has DHCP and
+VALIDATED Internet. xt_policy/xt_u32 modules now load before netd.
+The kernel module build must match the running kernel ABI and release string.
+The v57 package requires strict-runtime binaries in the external staging area;
+strict-runtime/mount.sh here is their source loader.
+Global quota alerts (xt_quota2) and XFRM/IPsec still report errors; quota limits
+and VPN have not been validated. SELinux remains permissive.
 
 Camera, ISP, charging and kernel hardware support remain experimental.
 Wi-Fi transition networks use WPA2; WPA3-only support is still absent.

@@ -20,6 +20,8 @@ scheduling = '--scheduling' in sys.argv[1:]
 tethering = '--tethering' in sys.argv[1:]
 wifi_compat = '--wifi-compat' in sys.argv[1:]
 adb_cmd = '--adb-cmd' in sys.argv[1:]
+strict_runtime = '--strict-runtime' in sys.argv[1:]
+assert not strict_runtime or adb_cmd
 assert not adb_cmd or wifi_compat
 assert not wifi_compat or tethering
 assert not tethering or scheduling
@@ -61,6 +63,9 @@ if wifi_compat:
 if adb_cmd:
     version = 'v56'
     out = stage / 'permanent-package-v56'
+if strict_runtime:
+    version = 'v57'
+    out = stage / 'permanent-package-v57'
 out.mkdir(exist_ok=True)
 sha=lambda b:hashlib.sha256(b).hexdigest()
 lk=(stage/'lk2nd-fastboot.img').read_bytes()
@@ -74,6 +79,9 @@ if scheduling:
     assert android[:8] == b'ANDROID!'
 if tethering:
     android = (stage / 'boot-mainline-android-v52-tethering.img').read_bytes()
+    assert android[:8] == b'ANDROID!'
+if strict_runtime:
+    android = (stage / 'boot-mainline-android-v57-strict-runtime.img').read_bytes()
     assert android[:8] == b'ANDROID!'
 assert len(lk)<=512*1024
 boot=lk.ljust(512*1024,b'\0')+android
@@ -118,6 +126,10 @@ if wifi_compat:
     files['wifi-runtime/OspreyMainlineWifiOverlay.apk'] = (stage / 'wifi-runtime/OspreyMainlineWifiOverlay.apk').read_bytes()
 if adb_cmd:
     files['adb-cmd.sh'] = (stage / 'adb-cmd.sh').read_bytes()
+if strict_runtime:
+    for name in ['libprocessgroup.so','libutils.so','netd','netd.rc','mount.sh','xt_policy.ko','xt_u32.ko']:
+        files['strict-runtime/'+name] = (stage.parent / 'strict-runtime' / name).read_bytes()
+    files['strict-runtime/enabled'] = b'1\n'
 if camera:
     for p in sorted((stage/'camera-runtime').rglob('*')):
         assert not p.is_symlink(), p
@@ -193,7 +205,7 @@ ui 'Original boot backup saved; installing mainline runtime'
 mkdir "$WORK/runtime"
 tar -xf "$WORK/runtime.tar" -C "$WORK/runtime"
 # Reject symlink destinations before copying into the separate test directory.
-for name in graphics-libs graphics-bin mesa-libs networkstack-runtime wifi-runtime wifi-runtime/product-overlay camera-runtime camera-runtime/lib camera-runtime/lib/libcamera camera-runtime/lib/libcamera/ipa camera-runtime/libexec camera-runtime/libexec/libcamera camera-runtime/share camera-runtime/share/libcamera camera-runtime/share/libcamera/ipa camera-runtime/share/libcamera/ipa/soft camera-runtime/bin; do
+for name in graphics-libs graphics-bin mesa-libs networkstack-runtime wifi-runtime wifi-runtime/product-overlay strict-runtime camera-runtime camera-runtime/lib camera-runtime/lib/libcamera camera-runtime/lib/libcamera/ipa camera-runtime/libexec camera-runtime/libexec/libcamera camera-runtime/share camera-runtime/share/libcamera camera-runtime/share/libcamera/ipa camera-runtime/share/libcamera/ipa/soft camera-runtime/bin; do
     [ ! -L "$DATA/$name" ] || fail "Symlink destination: $name"
 done
 find "$WORK/runtime" -type f | while read file; do

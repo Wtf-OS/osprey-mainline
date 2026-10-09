@@ -149,6 +149,9 @@ echo 0 >/sys/fs/selinux/enforce
 echo u:r:init:s0 >/proc/self/attr/current
 echo 'OSPREY ANDROID: entering Android 15 second-stage init'
 export LD_LIBRARY_PATH=/system/lib:/system/lib/bootstrap
+if [ -f /data/strict-runtime/enabled ]; then
+    LD_LIBRARY_PATH=/sbin /sbin/sh /data/strict-runtime/mount.sh || exit 1
+fi
 exec /system/bin/init second_stage
 '''
 # vold sees only RAM data, no eMMC partitions or removable disk sources.

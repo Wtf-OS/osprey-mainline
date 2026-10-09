@@ -2,7 +2,7 @@
   {
     "path": "/home/debian/osprey-port/linux-mainline-osprey",
     "branch": "lineage-22.1-mainline",
-    "commit": "5e12a900d44ba21219b1d993c2a5611cb9c8e20a"
+    "commit": "c8b6082adfc8719a73577d64a0b4c66dc27b3aa3"
   },
   {
     "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
