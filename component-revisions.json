@@ -1,82 +1,77 @@
 [
   {
-    "path": "/home/debian/osprey-port/linux-mainline-osprey",
-    "branch": "lineage-22.1-mainline",
-    "commit": "bf7b3b6c6694bf65c8a1653e50c735808a522c5b"
+    "path": "device/motorola/osprey",
+    "commit": "d201290459883321a5c2abc2a4c807f7f83312e6",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
-    "branch": "lineage-22.1-mainline",
-    "commit": "e6465df1791dfaec1c3b937b7ec1c0fd3cd82d5f"
+    "path": "device/motorola/msm8916-common",
+    "commit": "9bfbbfeda9e4b1be0ee1d787655e934748de4918",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
-    "branch": "lineage-22.1-mainline",
-    "commit": "d8b3f2ee47ff932d0154acd3f614f5f22bdbd6b2"
+    "path": "frameworks/native",
+    "commit": "87246eae1a618eb4e707c30e2dad5bb3eb4c8acb",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/external/mesa3d",
-    "branch": "lineage-22.1-mainline",
-    "commit": "b06f7d4f5032fe4869a49f60c3672ad52565ee5b"
+    "path": "frameworks/av",
+    "commit": "b6b36c1fdb3c6ffced822a054fbf035b544f0de2",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/external/minigbm",
-    "branch": "lineage-22.1-mainline",
-    "commit": "3c2309eba153f88c8c902bdbb81000004c97e48f"
+    "path": "system/core",
+    "commit": "9989ae08eb11043189fc058bc3e03bea3b3f595e",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/external/drm_hwcomposer",
-    "branch": "lineage-22.1-mainline",
-    "commit": "ca10cbbe74feb2d2f1854fb0ffbf7118730e18d2"
+    "path": "system/libhidl",
+    "commit": "743b14200e8fc633948f3b93592d8fd9a9cbc852",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/frameworks/base",
-    "branch": "lineage-22.1-mainline",
-    "commit": "85e3b27e2e6a0a05aca866c07ad8785cbda4640d"
+    "path": "system/memory/lmkd",
+    "commit": "c987110565ed4b370c17a91c6fb8b95a845dab18",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/system/libhidl",
-    "branch": "lineage-22.1-mainline",
-    "commit": "b6efd8403735aed845f9f6d10e3b1d3cd2addb76"
+    "path": "external/mesa3d",
+    "commit": "da650698401b5f308bcbf0f2d9761d4483a5359f",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/system/memory/lmkd",
-    "branch": "lineage-22.1-mainline",
-    "commit": "ebd6064dee7a652f9537d95f0e7f002cbb3faa49"
+    "path": "external/minigbm",
+    "commit": "816d41d7d149fed2d661fdfd3326b5bced9ce345",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/frameworks/opt/net/wifi",
-    "branch": "lineage-22.1-mainline",
-    "commit": "03ef316229edac11b332ee5b40cea9c899fa0051"
+    "path": "external/drm_hwcomposer",
+    "commit": "27226af23d0a8c122ab11a899e37362c33a12ed9",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/hardware/interfaces",
-    "branch": "lineage-22.1-mainline",
-    "commit": "121376f99d2f5a570c710d94a92c92d7363d8b19"
+    "path": "frameworks/opt/net/wifi",
+    "commit": "3a5e4a12b423cbfd4a83d1cb78b7fc67bb288fb8",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/libcamera-osprey",
-    "branch": "lineage-22.1-mainline",
-    "commit": "377115effecdad567d1b555cb7eb3cfe8e7370c6"
+    "path": "external/swiftshader",
+    "commit": "91b09a516172fa7016653e82ef3afebf18b360d4",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/system/core",
-    "branch": "lineage-22.1-mainline",
-    "commit": "dbc9949dcc1e6faf2ed9e42400f1606e64658bbe"
+    "path": "external/google-highway",
+    "commit": "2443906d1bf2ae0abc9a1a78475588d2653873bb",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/system/netd",
-    "branch": "lineage-22.1-mainline",
-    "commit": "d80b12030a39103f688c89166fc4035b4dc1183f"
+    "path": "external/skia",
+    "commit": "6960f76bb3d577e8e76466c22a0f4906a7b5611f",
+    "branch": "lineage-23.2-mainline"
   },
   {
-    "path": "/home/debian/osprey-port/lineage/frameworks/av",
-    "branch": "lineage-22.1-mainline",
-    "commit": "ea2c16eb0d8037693028dfe486e2a20a21f24071"
-  },
-  {
-    "path": "/home/debian/osprey-port/lineage/frameworks/native",
-    "branch": "lineage-22.1-mainline",
-    "commit": "7a0527c3e6e841f5c34cf48acb85b4a9587609f9"
+    "path": "external/XMP-Toolkit-SDK",
+    "commit": "18df40b8f34d4944d2142afcb1b5b517c627fc9f",
+    "branch": "lineage-23.2-mainline"
   }
 ]
