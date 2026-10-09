@@ -1,0 +1,182 @@
+diff --git a/src/com/android/customization/model/font/FontOption.java b/src/com/android/customization/model/font/FontOption.java
+index 05e3ad4..990a00a 100644
+--- a/src/com/android/customization/model/font/FontOption.java
++++ b/src/com/android/customization/model/font/FontOption.java
+@@ -25,7 +25,7 @@ import android.view.ViewGroup;
+ import android.widget.ImageView;
+ import android.widget.TextView;
+ 
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.util.ResourceUtils;
+ 
+ import com.android.customization.model.CustomizationManager;
+diff --git a/src/com/android/customization/model/font/FontOptionProvider.java b/src/com/android/customization/model/font/FontOptionProvider.java
+index 226fcdf..84404b4 100644
+--- a/src/com/android/customization/model/font/FontOptionProvider.java
++++ b/src/com/android/customization/model/font/FontOptionProvider.java
+@@ -31,7 +31,7 @@ import android.util.Log;
+ 
+ import com.android.customization.model.ResourceConstants;
+ import com.android.customization.model.theme.OverlayManagerCompat;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ 
+ import java.util.ArrayList;
+ import java.util.HashMap;
+diff --git a/src/com/android/customization/model/font/FontSectionController.java b/src/com/android/customization/model/font/FontSectionController.java
+index 95c2c9b..65b4605 100644
+--- a/src/com/android/customization/model/font/FontSectionController.java
++++ b/src/com/android/customization/model/font/FontSectionController.java
+@@ -30,7 +30,7 @@ import com.android.customization.model.CustomizationOption;
+ import com.android.customization.widget.OptionSelectorController;
+ import com.android.customization.widget.OptionSelectorController.OptionSelectedListener;
+ 
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.model.CustomizationSectionController;
+ import com.android.wallpaper.util.LaunchUtils;
+ 
+diff --git a/src/com/android/customization/model/iconpack/IconPackOption.java b/src/com/android/customization/model/iconpack/IconPackOption.java
+index ba83e1a..0cd8e46 100644
+--- a/src/com/android/customization/model/iconpack/IconPackOption.java
++++ b/src/com/android/customization/model/iconpack/IconPackOption.java
+@@ -32,7 +32,7 @@ import android.view.ViewGroup;
+ import android.widget.ImageView;
+ import android.widget.TextView;
+ 
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.util.ResourceUtils;
+ 
+ import com.android.customization.model.CustomizationManager;
+diff --git a/src/com/android/customization/model/iconpack/IconPackOptionProvider.java b/src/com/android/customization/model/iconpack/IconPackOptionProvider.java
+index ef25182..dabbdb9 100644
+--- a/src/com/android/customization/model/iconpack/IconPackOptionProvider.java
++++ b/src/com/android/customization/model/iconpack/IconPackOptionProvider.java
+@@ -32,7 +32,7 @@ import android.util.Log;
+ 
+ import com.android.customization.model.ResourceConstants;
+ import com.android.customization.model.theme.OverlayManagerCompat;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ 
+ import java.util.ArrayList;
+ import java.util.HashMap;
+diff --git a/src/com/android/customization/model/iconpack/IconPackSectionController.java b/src/com/android/customization/model/iconpack/IconPackSectionController.java
+index c84d5ed..3b777a8 100644
+--- a/src/com/android/customization/model/iconpack/IconPackSectionController.java
++++ b/src/com/android/customization/model/iconpack/IconPackSectionController.java
+@@ -32,7 +32,7 @@ import com.android.customization.picker.iconpack.IconPackSectionView;
+ import com.android.customization.widget.OptionSelectorController;
+ import com.android.customization.widget.OptionSelectorController.OptionSelectedListener;
+ 
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.model.CustomizationSectionController;
+ import com.android.wallpaper.util.LaunchUtils;
+ 
+diff --git a/src/com/android/customization/model/iconshape/IconShapeOption.java b/src/com/android/customization/model/iconshape/IconShapeOption.java
+index 0fb22be..5b5ef7f 100644
+--- a/src/com/android/customization/model/iconshape/IconShapeOption.java
++++ b/src/com/android/customization/model/iconshape/IconShapeOption.java
+@@ -34,7 +34,7 @@ import android.widget.ImageView;
+ import androidx.core.graphics.ColorUtils;
+ 
+ import com.android.customization.model.theme.ShapeAppIcon;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.util.ResourceUtils;
+ 
+ import com.android.customization.model.CustomizationManager;
+@@ -78,10 +78,10 @@ public class IconShapeOption implements CustomizationOption<IconShapeOption> {
+         }
+ 
+         Resources.Theme theme = view.getContext().getTheme();
+-        int borderWidth = 2 * res.getDimensionPixelSize(R.dimen.option_border_width);
++        int borderWidth = 2 * res.getDimensionPixelSize(com.android.wallpaper.R.dimen.option_border_width);
+ 
+         Drawable background = mShape.getDrawable(0);
+-        background.setTintList(res.getColorStateList(R.color.option_border_color, theme));
++        background.setTintList(res.getColorStateList(com.android.wallpaper.R.color.option_border_color, theme));
+ 
+         ShapeDrawable foreground = (ShapeDrawable) mShape.getDrawable(1);
+ 
+diff --git a/src/com/android/customization/model/iconshape/IconShapeOptionProvider.java b/src/com/android/customization/model/iconshape/IconShapeOptionProvider.java
+index f4e665a..4b61e70 100644
+--- a/src/com/android/customization/model/iconshape/IconShapeOptionProvider.java
++++ b/src/com/android/customization/model/iconshape/IconShapeOptionProvider.java
+@@ -42,7 +42,7 @@ import com.android.customization.model.ResourceConstants;
+ import com.android.customization.model.theme.OverlayManagerCompat;
+ import com.android.customization.model.theme.ShapeAppIcon;
+ import com.android.customization.widget.DynamicAdaptiveIconDrawable;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+diff --git a/src/com/android/customization/model/iconshape/IconShapeSectionController.java b/src/com/android/customization/model/iconshape/IconShapeSectionController.java
+index 3741cc1..5d98e10 100644
+--- a/src/com/android/customization/model/iconshape/IconShapeSectionController.java
++++ b/src/com/android/customization/model/iconshape/IconShapeSectionController.java
+@@ -28,7 +28,7 @@ import com.android.customization.model.CustomizationManager.OptionsFetchedListen
+ import com.android.customization.picker.iconshape.IconShapeFragment;
+ import com.android.customization.picker.iconshape.IconShapeSectionView;
+ 
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.model.CustomizationSectionController;
+ 
+ import java.util.List;
+diff --git a/src/com/android/customization/picker/font/FontFragment.java b/src/com/android/customization/picker/font/FontFragment.java
+index fccbab8..80440f4 100644
+--- a/src/com/android/customization/picker/font/FontFragment.java
++++ b/src/com/android/customization/picker/font/FontFragment.java
+@@ -37,7 +37,7 @@ import com.android.customization.module.logging.ThemesUserEventLogger;
+ import com.android.customization.picker.WallpaperPreviewer;
+ import com.android.customization.widget.OptionSelectorController;
+ import com.android.customization.widget.OptionSelectorController.CheckmarkStyle;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.picker.AppbarFragment;
+ import com.android.wallpaper.widget.BottomActionBar;
+ 
+diff --git a/src/com/android/customization/picker/iconpack/IconPackFragment.java b/src/com/android/customization/picker/iconpack/IconPackFragment.java
+index 8895181..6808dc3 100644
+--- a/src/com/android/customization/picker/iconpack/IconPackFragment.java
++++ b/src/com/android/customization/picker/iconpack/IconPackFragment.java
+@@ -39,7 +39,7 @@ import com.android.customization.module.logging.ThemesUserEventLogger;
+ import com.android.customization.picker.WallpaperPreviewer;
+ import com.android.customization.widget.OptionSelectorController;
+ import com.android.customization.widget.OptionSelectorController.CheckmarkStyle;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.picker.AppbarFragment;
+ import com.android.wallpaper.widget.BottomActionBar;
+ 
+diff --git a/src/com/android/customization/picker/iconshape/IconShapeFragment.java b/src/com/android/customization/picker/iconshape/IconShapeFragment.java
+index 257bb39..057c68c 100644
+--- a/src/com/android/customization/picker/iconshape/IconShapeFragment.java
++++ b/src/com/android/customization/picker/iconshape/IconShapeFragment.java
+@@ -36,7 +36,7 @@ import com.android.customization.model.iconshape.IconShapeManager;
+ import com.android.customization.model.theme.OverlayManagerCompat;
+ import com.android.customization.widget.OptionSelectorController;
+ import com.android.customization.widget.OptionSelectorController.CheckmarkStyle;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ import com.android.wallpaper.picker.AppbarFragment;
+ import com.android.wallpaper.widget.BottomActionBar;
+ 
+diff --git a/src/com/android/customization/widget/OptionSelectorController.java b/src/com/android/customization/widget/OptionSelectorController.java
+index 2848b61..6150fd1 100644
+--- a/src/com/android/customization/widget/OptionSelectorController.java
++++ b/src/com/android/customization/widget/OptionSelectorController.java
+@@ -43,7 +43,7 @@ import androidx.recyclerview.widget.RecyclerViewAccessibilityDelegate;
+ 
+ import com.android.customization.model.CustomizationManager;
+ import com.android.customization.model.CustomizationOption;
+-import com.android.wallpaper.R;
++import com.android.themepicker.R;
+ 
+ import java.util.HashSet;
+ import java.util.List;

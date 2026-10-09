@@ -1,0 +1,98 @@
+diff --git a/sysmeminfo.cpp b/sysmeminfo.cpp
+index 60c1c83..30dd88e 100644
+--- a/sysmeminfo.cpp
++++ b/sysmeminfo.cpp
+@@ -377,91 +377,14 @@ bool ReadDmabufHeapTotalExportedKb(uint64_t* size, const std::string& dma_heap_r
+ }
+ 
+ bool ReadPerProcessGpuMem([[maybe_unused]] std::unordered_map<uint32_t, uint64_t>* out) {
+-#if defined(__ANDROID__) && !defined(__ANDROID_APEX__) && !defined(__ANDROID_VNDK__)
+-    static constexpr const char kBpfGpuMemTotalMap[] = "/sys/fs/bpf/map_gpuMem_gpu_mem_total_map";
+-
+-    // Use the read-only wrapper BpfMapRO to properly retrieve the read-only map.
+-    auto map = bpf::BpfMapRO<uint64_t, uint64_t>(kBpfGpuMemTotalMap);
+-    if (!map.isValid()) {
+-        LOG(ERROR) << "Can't open file: " << kBpfGpuMemTotalMap;
+-        return false;
+-    }
+-
+-    if (!out) {
+-        LOG(ERROR) << "ReadPerProcessGpuMem: out param is null";
+-        return false;
+-    }
+-    out->clear();
+-
+-    auto map_key = map.getFirstKey();
+-    if (!map_key.ok()) {
+-        return true;
+-    }
+-
+-    do {
+-        uint64_t key = map_key.value();
+-        uint32_t pid = key;  // BPF Key [32-bits GPU ID | 32-bits PID]
+-
+-        auto gpu_mem = map.readValue(key);
+-        if (!gpu_mem.ok()) {
+-            LOG(ERROR) << "Invalid file format: " << kBpfGpuMemTotalMap;
+-            return false;
+-        }
+-
+-        const auto& iter = out->find(pid);
+-        if (iter == out->end()) {
+-            out->insert({pid, gpu_mem.value() / 1024});
+-        } else {
+-            iter->second += gpu_mem.value() / 1024;
+-        }
+-
+-        map_key = map.getNextKey(key);
+-    } while (map_key.ok());
+-
+-    return true;
+-#else
++    if (out) out->clear();
+     return false;
+-#endif
+ }
+ 
+ bool ReadProcessGpuUsageKb([[maybe_unused]] uint32_t pid, [[maybe_unused]] uint32_t gpu_id,
+                            uint64_t* size) {
+-#if defined(__ANDROID__) && !defined(__ANDROID_APEX__) && !defined(__ANDROID_VNDK__)
+-    static constexpr const char kBpfGpuMemTotalMap[] = "/sys/fs/bpf/map_gpuMem_gpu_mem_total_map";
+-
+-    uint64_t gpu_mem;
+-
+-    // BPF Key [32-bits GPU ID | 32-bits PID]
+-    uint64_t kBpfKeyGpuUsage = ((uint64_t)gpu_id << 32) | pid;
+-
+-    // Use the read-only wrapper BpfMapRO to properly retrieve the read-only map.
+-    auto map = bpf::BpfMapRO<uint64_t, uint64_t>(kBpfGpuMemTotalMap);
+-    if (!map.isValid()) {
+-        LOG(ERROR) << "Can't open file: " << kBpfGpuMemTotalMap;
+-        return false;
+-    }
+-
+-    auto res = map.readValue(kBpfKeyGpuUsage);
+-
+-    if (res.ok()) {
+-        gpu_mem = res.value();
+-    } else if (res.error().code() == ENOENT) {
+-        gpu_mem = 0;
+-    } else {
+-        LOG(ERROR) << "Invalid file format: " << kBpfGpuMemTotalMap;
+-        return false;
+-    }
+-
+-    if (size) {
+-        *size = gpu_mem / 1024;
+-    }
+-    return true;
+-#else
+-    if (size) {
+-        *size = 0;
+-    }
++    if (size) *size = 0;
+     return false;
+-#endif
+ }
+ 
+ bool ReadGpuTotalUsageKb(uint64_t* size) {

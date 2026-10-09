@@ -1,0 +1,35 @@
+diff --git a/apexd/apexd.cpp b/apexd/apexd.cpp
+index b1c16ac..556c82d 100644
+--- a/apexd/apexd.cpp
++++ b/apexd/apexd.cpp
+@@ -219,8 +219,7 @@ void ReleaseF2fsCompressedBlocks(const std::string& file_path) {
+ }
+ 
+ std::unique_ptr<DmTable> CreateVerityTable(const ApexVerityData& verity_data,
+-                                           const std::string& block_device,
+-                                           bool restart_on_corruption) {
++                                           const std::string& block_device) {
+   AvbHashtreeDescriptor* desc = verity_data.desc.get();
+   auto table = std::make_unique<DmTable>();
+ 
+@@ -237,10 +236,6 @@ std::unique_ptr<DmTable> CreateVerityTable(const ApexVerityData& verity_data,
+       hash_start_block, verity_data.hash_algorithm, verity_data.root_digest,
+       verity_data.salt);
+ 
+-  target->IgnoreZeroBlocks();
+-  if (restart_on_corruption) {
+-    target->SetVerityMode(kDmVerityRestartOnCorruption);
+-  }
+   table->AddTarget(std::move(target));
+ 
+   table->set_readonly(true);
+@@ -442,8 +437,7 @@ Result<MountedApexData> MountPackageImpl(const ApexFile& apex,
+   DmDevice verity_dev;
+   if (mount_on_verity) {
+     auto verity_table =
+-        CreateVerityTable(*verity_data, loopback_device.name,
+-                          /* restart_on_corruption = */ !verify_image);
++        CreateVerityTable(*verity_data, loopback_device.name);
+     Result<DmDevice> verity_dev_res =
+         CreateDmDevice(device_name, *verity_table, reuse_device);
+     if (!verity_dev_res.ok()) {

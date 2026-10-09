@@ -1,0 +1,41 @@
+diff --git a/msm8916-common/msm8916-common-vendor.mk b/msm8916-common/msm8916-common-vendor.mk
+index 73e4487..4da6d2b 100644
+--- a/msm8916-common/msm8916-common-vendor.mk
++++ b/msm8916-common/msm8916-common-vendor.mk
+@@ -45,8 +45,7 @@ PRODUCT_COPY_FILES += \
+     vendor/motorola/msm8916-common/proprietary/vendor/lib/libbtnv.so:system/vendor/lib/libbtnv.so \
+     vendor/motorola/msm8916-common/proprietary/vendor/lib/vendor.qti.hardware.fm@1.0.so:system/vendor/lib/vendor.qti.hardware.fm@1.0.so \
+     vendor/motorola/msm8916-common/proprietary/vendor/lib/libaptX_encoder.so:system/vendor/lib/libaptX_encoder.so \
+-    vendor/motorola/msm8916-common/proprietary/vendor/lib/libaptXHD_encoder.so:system/vendor/lib/libaptXHD_encoder.so \
+-    vendor/motorola/msm8916-common/proprietary/vendor/lib/libldacBT_enc.so:system/vendor/lib/libldacBT_enc.so
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libaptXHD_encoder.so:system/vendor/lib/libaptXHD_encoder.so
+ 
+ # Camera
+ PRODUCT_COPY_FILES += \
+@@ -296,3 +295,16 @@ PRODUCT_COPY_FILES += \
+     vendor/motorola/msm8916-common/proprietary/vendor/firmware/venus.b04:system/vendor/firmware/venus.b04 \
+     vendor/motorola/msm8916-common/proprietary/vendor/firmware/venus.mbn:system/vendor/firmware/venus.mbn \
+     vendor/motorola/msm8916-common/proprietary/vendor/firmware/venus.mdt:system/vendor/firmware/venus.mdt
++# Donor ROM HAL binaries needed for the non-Treble 32-bit userspace.
++PRODUCT_COPY_FILES += \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/hw/audio.primary.msm8916.so:system/vendor/lib/hw/audio.primary.msm8916.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/hw/gralloc.msm8916.so:system/vendor/lib/hw/gralloc.msm8916.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/hw/hwcomposer.msm8916.so:system/vendor/lib/hw/hwcomposer.msm8916.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/hw/memtrack.msm8916.so:system/vendor/lib/hw/memtrack.msm8916.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libhdmi.so:system/vendor/lib/libhdmi.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libmemalloc.so:system/vendor/lib/libmemalloc.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/liboverlay.so:system/vendor/lib/liboverlay.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libqdMetaData.so:system/vendor/lib/libqdMetaData.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libqdutils.so:system/vendor/lib/libqdutils.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libqservice.so:system/vendor/lib/libqservice.so \
++    vendor/motorola/msm8916-common/proprietary/vendor/lib/libbfqio.so:system/vendor/lib/libbfqio.so
+diff --git a/msm8916-common/proprietary/vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc b/msm8916-common/proprietary/vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
+index 22b71f4..f1f1f76 100644
+--- a/msm8916-common/proprietary/vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
++++ b/msm8916-common/proprietary/vendor/etc/init/android.hardware.bluetooth@1.0-service-qti.rc
+@@ -1,4 +1,5 @@
+ service vendor.bluetooth-1-0-qti /vendor/bin/hw/android.hardware.bluetooth@1.0-service-qti
++    setenv LD_PRELOAD /vendor/lib/libhidlbase_shim.so
+     class hal
+     user bluetooth
+     group bluetooth system wakelock oem_2901

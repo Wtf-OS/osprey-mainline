@@ -1,0 +1,141 @@
+[
+  {
+    "path": "bionic",
+    "base": "53baa8eac64027ea286e7d98502e785a7bb8a254",
+    "patch_sha256": "c749306f714b56ba615ef7bbdf13b43408bc5650f8cf643ca4249bda29cb3f04",
+    "patch": "compat/android15/bionic.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "build/soong",
+    "base": "8b8cdfec31140fdc8834408ac0c58b708a5a897b",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "device/motorola/msm8916-common",
+    "base": "d8b3f2ee47ff932d0154acd3f614f5f22bdbd6b2",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "external/drm_hwcomposer",
+    "base": "ca10cbbe74feb2d2f1854fb0ffbf7118730e18d2",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "external/swiftshader",
+    "base": "44985b607e0f2557f634c0cb64f3ecf92670f375",
+    "patch_sha256": "d274d606ae3e45766d96e7e7a5a1cfe722d1fc06006b51056df46c17df0c9c1e",
+    "patch": "compat/android15/external_swiftshader.patch",
+    "disposition": "mainline-fallback-patch"
+  },
+  {
+    "path": "frameworks/av",
+    "base": "d943cdbbdda2dca40d0b66fd6c8cf1a34b959ffe",
+    "patch_sha256": "2de8499946484f9f42459507fdc49ac041cd888e57be177fec5febf0200112a4",
+    "commit": "ea2c16eb0d8037693028dfe486e2a20a21f24071",
+    "repository": "Wtf-OS/android_frameworks_av",
+    "worktree": "/home/debian/osprey-port/publication-android15/frameworks_av",
+    "disposition": "mainline-component-commit"
+  },
+  {
+    "path": "frameworks/native",
+    "base": "8d661f5ab1574df2ff68efb02939e564620fed78",
+    "patch_sha256": "5796da1ccc291cd7228156f39b5b5a8ae746fc8bc075212cb34517566a9b0c16",
+    "commit": "7a0527c3e6e841f5c34cf48acb85b4a9587609f9",
+    "repository": "Wtf-OS/android_frameworks_native",
+    "worktree": "/home/debian/osprey-port/publication-android15/frameworks_native",
+    "disposition": "mainline-component-commit"
+  },
+  {
+    "path": "hardware/interfaces",
+    "base": "121376f99d2f5a570c710d94a92c92d7363d8b19",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "hardware/motorola",
+    "base": "ec1f4b135ed55737fc2bb57f79a88325142a9698",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "lineage-sdk",
+    "base": "90841e6cec32acff06e1dbbd952589dde4e448d2",
+    "patch_sha256": "3cfa061dfee104b24df605ee5c6527f3f7d31aa369c17635270b24d7ea1df021",
+    "patch": "compat/android15/lineage-sdk.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "packages/apps/Dialer",
+    "base": "51abb61aac653a450064e493be173570181cef4d",
+    "patch_sha256": "e4da44b8d3b8b6ee3c4ac2b77080d344c23b21c5250faa2262b1e0087dd0f563",
+    "patch": "compat/android15/packages_apps_Dialer.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "packages/apps/Settings",
+    "base": "6db559f535f74fc04e047e98ccad50934fd3d14f",
+    "patch_sha256": "39e31b4faebb6c061b1d1d1ac3b85e9bffa532c7f402f267d6296036ba83d3c6",
+    "patch": "compat/android15/packages_apps_Settings.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "packages/apps/ThemePicker",
+    "base": "2a58eabe125dee4f1ba6971bd99c7c66bbc2ad41",
+    "patch_sha256": "d5126ce8c04fb78bba69045b241c52652a8929bfce72a03af53feabc599d4a0b",
+    "patch": "compat/android15/packages_apps_ThemePicker.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "packages/modules/Connectivity",
+    "base": "47cc7dc3a3dd89594fcf7099b48abb7e376ddf72",
+    "patch_sha256": "be5398716fa7cb5e0fd9dafeb3746cac905f5c655608d90c3b1a53d0f2004b3d",
+    "patch": "compat/android15/packages_modules_Connectivity.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "packages/modules/DnsResolver",
+    "base": "a37e4a3d55fc756750e0c93985d60cd660cea60a",
+    "patch_sha256": "2235845169333829fe70918118f1859450f9bf31bad4c13d443fc09c9bde09bf",
+    "patch": "compat/android15/packages_modules_DnsResolver.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "prebuilts/clang-tools",
+    "base": "afb3e8b9c965c8a1dc63a41417d65c9556008e5e",
+    "patch_sha256": "bea89e8bbe04eec10fb9d790c043b53522ded050b53f80b785f5a6ec195f0149",
+    "disposition": "android15-only-review-before-reuse",
+    "binary_changes": "preserved in local source-state and Git stash; not published"
+  },
+  {
+    "path": "system/apex",
+    "base": "1b1454b55248754e5c6a6105d8ce5ba6c06480e2",
+    "patch_sha256": "4f44c7b397e521090b8ad2ce9a869d85fbc14e65dd8b6a150d33be64ae0e4f96",
+    "patch": "compat/android15/system_apex.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "system/extras",
+    "base": "04d07ac1faf7c58b5f38316cf97639bc2ea67a50",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "disposition": "untracked-backups-or-mode-noise; no source patch"
+  },
+  {
+    "path": "system/memory/libmeminfo",
+    "base": "c4a78c8e4e63b13168df85b2b172f8db737ba926",
+    "patch_sha256": "ea9cc4705a60f564831cbfe41ae0205818fd2ca1123c1d758c450e424dbcf73b",
+    "patch": "compat/android15/system_memory_libmeminfo.patch",
+    "disposition": "android15-only-review-before-reuse"
+  },
+  {
+    "path": "vendor/motorola",
+    "base": "792ec73afd730579f06f6ecdc9bd65b2f1df7853",
+    "patch_sha256": "06ad2d5343de82cc0e0660756a911ca0385801310175847a76cb1385c3657945",
+    "patch": "compat/android15/vendor_motorola.patch",
+    "disposition": "android15-only-review-before-reuse",
+    "binary_changes": "preserved in local source-state and Git stash; not published"
+  }
+]

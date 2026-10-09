@@ -1,0 +1,27 @@
+diff --git a/libc/bionic/rename.cpp b/libc/bionic/rename.cpp
+index 89786f7..430ce64 100644
+--- a/libc/bionic/rename.cpp
++++ b/libc/bionic/rename.cpp
+@@ -26,13 +26,20 @@
+  * SUCH DAMAGE.
+  */
+ 
++#include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
++#include <sys/syscall.h>
++#include <unistd.h>
+ 
+ int rename(const char* old_path, const char* new_path) {
+-  return renameat2(AT_FDCWD, old_path, AT_FDCWD, new_path, 0);
++  return renameat(AT_FDCWD, old_path, AT_FDCWD, new_path);
+ }
+ 
+ int renameat(int old_dir_fd, const char* old_path, int new_dir_fd, const char* new_path) {
+-  return renameat2(old_dir_fd, old_path, new_dir_fd, new_path, 0);
++  int result = renameat2(old_dir_fd, old_path, new_dir_fd, new_path, 0);
++  if (result == -1 && errno == ENOSYS) {
++    return static_cast<int>(syscall(__NR_renameat, old_dir_fd, old_path, new_dir_fd, new_path));
++  }
++  return result;
+ }

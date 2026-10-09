@@ -1,0 +1,20 @@
+diff --git a/bpf/loader/Android.bp b/bpf/loader/Android.bp
+index b08913a..aa272ac 100644
+--- a/bpf/loader/Android.bp
++++ b/bpf/loader/Android.bp
+@@ -74,3 +74,15 @@ prebuilt_etc {
+     filename: "netbpfload.35rc",
+     installable: false,
+ }
++
++// Standalone ARM64 executable for the RAM-only osprey mainline probe.
++cc_binary {
++    name: "netbpfload_mainline_probe",
++    defaults: ["bpf_cc_defaults"],
++    srcs: ["NetBpfLoad.cpp"],
++    header_libs: ["bpf_headers"],
++    static_executable: true,
++    static_libs: ["libbase", "liblog"],
++    compile_multilib: "64",
++    sanitize: { integer_overflow: true },
++}

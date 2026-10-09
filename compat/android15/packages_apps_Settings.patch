@@ -1,0 +1,19 @@
+diff --git a/src/com/android/settings/connecteddevice/usb/UsbBackend.java b/src/com/android/settings/connecteddevice/usb/UsbBackend.java
+index 6e643f4..b45d468 100644
+--- a/src/com/android/settings/connecteddevice/usb/UsbBackend.java
++++ b/src/com/android/settings/connecteddevice/usb/UsbBackend.java
+@@ -80,7 +80,13 @@ public class UsbBackend {
+ 
+         mMidiSupported = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI);
+         final TetheringManager tm = context.getSystemService(TetheringManager.class);
+-        mTetheringSupported = tm.isTetheringSupported();
++        boolean tetheringSupported = false;
++        try {
++            tetheringSupported = tm != null && tm.isTetheringSupported();
++        } catch (Exception e) {
++            android.util.Log.w("CustomUsbBackend", "Unable to check tethering support", e);
++        }
++        mTetheringSupported = tetheringSupported;
+         updatePorts();
+     }
+ 

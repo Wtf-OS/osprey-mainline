@@ -1,0 +1,31 @@
+diff --git a/src/Vulkan/VkDeviceMemoryExternalAndroid.cpp b/src/Vulkan/VkDeviceMemoryExternalAndroid.cpp
+index ba91f33..6c52c2a 100644
+--- a/src/Vulkan/VkDeviceMemoryExternalAndroid.cpp
++++ b/src/Vulkan/VkDeviceMemoryExternalAndroid.cpp
+@@ -14,6 +14,8 @@
+ 
+ #include "VkDeviceMemoryExternalAndroid.hpp"
+ 
++#include <system/graphics.h>
++
+ #include "VkDestroy.hpp"
+ #include "VkFormat.hpp"
+ #include "VkObject.hpp"
+@@ -27,6 +29,8 @@ uint32_t GetAHBFormatFromVkFormat(VkFormat format)
+ {
+ 	switch(format)
+ 	{
++	case VK_FORMAT_B8G8R8A8_UNORM:
++		return HAL_PIXEL_FORMAT_BGRA_8888;
+ 	case VK_FORMAT_D16_UNORM:
+ 		return AHARDWAREBUFFER_FORMAT_D16_UNORM;
+ 	case VK_FORMAT_X8_D24_UNORM_PACK32:
+@@ -353,6 +357,8 @@ VkFormat AHardwareBufferExternalMemory::GetVkFormatFromAHBFormat(uint32_t ahbFor
+ {
+ 	switch(ahbFormat)
+ 	{
++	case HAL_PIXEL_FORMAT_BGRA_8888:
++		return VK_FORMAT_B8G8R8A8_UNORM;
+ 	case AHARDWAREBUFFER_FORMAT_BLOB:
+ 		return VK_FORMAT_UNDEFINED;
+ 	case AHARDWAREBUFFER_FORMAT_D16_UNORM:
