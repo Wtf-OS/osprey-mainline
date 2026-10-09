@@ -8,13 +8,13 @@
   "cmdline": "root=/dev/mmcblk0p41 rootwait rootfstype=ext4 rw init=/init androidboot.hardware=osprey androidboot.serialno=ZY2223C9DZ console=ttyMSM0,115200n8 console=tty0 loglevel=7 panic=0 cma=32M enforcing=0 selinux=1 androidboot.selinux=permissive lk2nd.pass-simplefb=1 msm.separate_gpu_kms=1 clk_ignore_unused pd_ignore_unused regulator_ignore_unused",
   "packages": [
     {
-      "file": "osprey-lineage-23.2-mainline-a16-v1-EXPERIMENTAL.zip",
-      "sha256": "88bfd2b686e7a6993141fd71e363a0e3f27bccc0af71635759275aa18e4683be",
-      "bytes": 774798570
+      "file": "osprey-lineage-23.2-mainline-a16-v2-EXPERIMENTAL.zip",
+      "sha256": "bbe29d2804d223909abcdcb6e318c6fe28722366bb01fccfd43aa12cacf9bf2d",
+      "bytes": 774799717
     },
     {
       "file": "osprey-a16-rollback.zip",
-      "sha256": "2521ea3fff3a2e8c5fe8bb775e07954d14fea91a22dd76fc55f663e5b6634a61",
+      "sha256": "9db593c9a9b4940a90bd5182b48031dbdb075542462189f82b80b8437a5d415f",
       "bytes": 1175
     }
   ]
