@@ -1,0 +1,86 @@
+[
+  {
+    "path": "/home/debian/osprey-port/linux-mainline-osprey",
+    "previous_branch": "wip/msm8916/7.0",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "ea3a5c52f8f62f6464b6cdc06b700f0704f1c04a"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
+    "previous_branch": "lineage-22.1-wtfos",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "766e921f22589f2c6d41b47e9a883bcf08805ad9"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
+    "previous_branch": "lineage-22.1-wtfos",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "2b1964e068301504a342759ba1b492a8a84cd718"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/mesa3d",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "c7b9082a3839eee7c3d5744c0a9cd421d93e31e5"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/minigbm",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "45e16e92ca33a0d00757d22630c7dd4616b0f61e"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/drm_hwcomposer",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "5c2bc6925e480d6799fa2d90a7f6bb7a05f828a5"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/base",
+    "previous_branch": "lineage-22.1-wtfos",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "85e3b27e2e6a0a05aca866c07ad8785cbda4640d"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/libhidl",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "b6efd8403735aed845f9f6d10e3b1d3cd2addb76"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/memory/lmkd",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "3fe2f2c170752aec4bfc141e72cc8e760a0b3303"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/opt/net/wifi",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "d6c56e72d2a60c6b6bdb6ca59e0579ebe86940aa"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/hardware/interfaces",
+    "previous_branch": "lineage-22.1-wtfos",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "7f5685d2e0532bc8a48c664c9347df39003e842b"
+  },
+  {
+    "path": "/home/debian/osprey-port/libcamera-osprey",
+    "previous_branch": "master",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "8103c3f29fba61dbd1d3bbf1a099280c5f3217e3"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/core",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "5860c0fa2ed895e50eb5d5e0b41462751f2e0991"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/netd",
+    "previous_branch": "(detached HEAD)",
+    "branch": "lineage-22.1-mainline",
+    "base_commit": "985ee564349e5a655334d848e1b93195769f6f05"
+  }
+]

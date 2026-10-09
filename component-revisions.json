@@ -1,0 +1,72 @@
+[
+  {
+    "path": "/home/debian/osprey-port/linux-mainline-osprey",
+    "branch": "lineage-22.1-mainline",
+    "commit": "5e12a900d44ba21219b1d993c2a5611cb9c8e20a"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
+    "branch": "lineage-22.1-mainline",
+    "commit": "e6465df1791dfaec1c3b937b7ec1c0fd3cd82d5f"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
+    "branch": "lineage-22.1-mainline",
+    "commit": "d8b3f2ee47ff932d0154acd3f614f5f22bdbd6b2"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/mesa3d",
+    "branch": "lineage-22.1-mainline",
+    "commit": "b06f7d4f5032fe4869a49f60c3672ad52565ee5b"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/minigbm",
+    "branch": "lineage-22.1-mainline",
+    "commit": "3c2309eba153f88c8c902bdbb81000004c97e48f"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/drm_hwcomposer",
+    "branch": "lineage-22.1-mainline",
+    "commit": "ca10cbbe74feb2d2f1854fb0ffbf7118730e18d2"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/base",
+    "branch": "lineage-22.1-mainline",
+    "commit": "85e3b27e2e6a0a05aca866c07ad8785cbda4640d"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/libhidl",
+    "branch": "lineage-22.1-mainline",
+    "commit": "b6efd8403735aed845f9f6d10e3b1d3cd2addb76"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/memory/lmkd",
+    "branch": "lineage-22.1-mainline",
+    "commit": "ebd6064dee7a652f9537d95f0e7f002cbb3faa49"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/opt/net/wifi",
+    "branch": "lineage-22.1-mainline",
+    "commit": "03ef316229edac11b332ee5b40cea9c899fa0051"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/hardware/interfaces",
+    "branch": "lineage-22.1-mainline",
+    "commit": "121376f99d2f5a570c710d94a92c92d7363d8b19"
+  },
+  {
+    "path": "/home/debian/osprey-port/libcamera-osprey",
+    "branch": "lineage-22.1-mainline",
+    "commit": "377115effecdad567d1b555cb7eb3cfe8e7370c6"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/core",
+    "branch": "lineage-22.1-mainline",
+    "commit": "dbc9949dcc1e6faf2ed9e42400f1606e64658bbe"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/netd",
+    "branch": "lineage-22.1-mainline",
+    "commit": "d80b12030a39103f688c89166fc4035b4dc1183f"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  "qcom_common.ko",
+  "mdt_loader.ko",
+  "qcom_pil_info.ko",
+  "qcom_wcnss_pil.ko",
+  "wcnss_ctrl.ko",
+  "wcn36xx.ko"
+]

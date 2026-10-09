@@ -1,0 +1,199 @@
+service probe-hwservicemanager /system/bin/hwservicemanager
+    user system
+    group system readproc
+    class early_hal
+    disabled
+    seclabel u:r:hwservicemanager:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    onrestart setprop hwservicemanager.ready false
+
+service probe-powerstats /vendor/bin/hw/android.hardware.power.stats@1.0-service.mock
+    interface android.hardware.power.stats@1.0::IPowerStats default
+    user system
+    group system
+    class hal
+    disabled
+    seclabel u:r:hal_power_stats_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+
+service probe-memtrack /vendor/bin/hw/android.hardware.memtrack@1.0-service
+    interface android.hardware.memtrack@1.0::IMemtrack default
+    user system
+    group system
+    class hal
+    disabled
+    seclabel u:r:hal_memtrack_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+
+service probe-system-suspend /system/bin/hw/android.system.suspend-service
+    interface aidl android.system.suspend.ISystemSuspend/default
+    user system
+    group system wakelock
+    capabilities BLOCK_SUSPEND
+    class early_hal
+    disabled
+    seclabel u:r:system_suspend:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+
+service probe-installd /system/bin/installd
+    class main
+    user root
+    capabilities CHOWN DAC_OVERRIDE DAC_READ_SEARCH FOWNER FSETID KILL SETGID SETUID SYS_ADMIN
+    seclabel u:r:installd:s0
+    disabled
+    stdio_to_kmsg
+
+service zygote-systemserver /system/bin/app_process32 -Xzygote /system/bin --zygote --start-system-server --abi-list=armeabi-v7a,armeabi --socket-name=zygote --enable-lazy-preload
+    class main
+    user root
+    group root readproc reserved_disk
+    rlimit nofile 32768 32768
+    rlimit nice 40 40
+    setenv LD_LIBRARY_PATH /data/graphics-libs:/system/lib:/system/lib/bootstrap:/vendor/lib
+    setenv ANGLE_DEFAULT_PLATFORM swiftshader
+    socket zygote stream 0660 root system
+    socket usap_pool_primary stream 0660 root system
+    seclabel u:r:zygote:s0
+    disabled
+    oneshot
+
+service probe-health /vendor/bin/hw/android.hardware.health@2.1-service
+    user system
+    group system
+    seclabel u:r:hal_health_default:s0
+    disabled
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+
+service probe-vibrator /vendor/bin/hw/android.hardware.vibrator@1.0-service.lineage
+    user system
+    group system input
+    seclabel u:r:hal_vibrator_default:s0
+    disabled
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+
+service probe-artd /apex/com.android.art/bin/artd
+    interface aidl artd
+    user artd
+    group artd
+    capabilities DAC_OVERRIDE DAC_READ_SEARCH FOWNER CHOWN
+    seclabel u:r:artd:s0
+    disabled
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+
+service probe-vold /system/bin/vold --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
+    user root
+    group root reserved_disk
+    seclabel u:r:vold:s0
+    disabled
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+
+service probe-storaged /system/bin/storaged
+    user root
+    group package_info
+    seclabel u:r:storaged:s0
+    disabled
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+
+service probe-bpfloader /netbpfload_mainline_probe
+    user root
+    group root graphics network_stack net_admin net_bw_acct net_bw_stats net_raw system
+    capabilities CHOWN SYS_ADMIN NET_ADMIN
+    rlimit memlock 1073741824 1073741824
+    seclabel u:r:bpfloader:s0
+    disabled
+    oneshot
+    stdio_to_kmsg
+
+service netd /system/bin/netd
+    user root
+    group root net_admin
+    capabilities CHOWN DAC_OVERRIDE DAC_READ_SEARCH FOWNER IPC_LOCK KILL NET_ADMIN NET_BIND_SERVICE NET_RAW SETUID SETGID
+    socket dnsproxyd stream 0660 root inet
+    socket mdns stream 0660 root system
+    socket fwmarkd stream 0660 root inet
+    seclabel u:r:netd:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled
+    oneshot
+    stdio_to_kmsg
+
+service idmap2d /system/bin/idmap2d
+    user system
+    group system
+    seclabel u:r:idmap:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled
+
+on property:bpf.progs_loaded=1
+    start netd
+service probe-light /light-service-probe
+    user system
+    group system
+    seclabel u:r:hal_light_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+    disabled
+    stdio_to_kmsg
+# Mainline bootstrap prerequisites; runtime data stays in RAM.
+service probe-gatekeeper-hal /vendor/bin/hw/android.hardware.gatekeeper@1.0-service.software
+    user system
+    group system
+    seclabel u:r:hal_gatekeeper_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-gatekeeperd /system/bin/gatekeeperd /data/misc/gatekeeper
+    user system
+    seclabel u:r:gatekeeperd:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-keymaster /vendor/bin/hw/android.hardware.keymaster@4.1-service
+    user system
+    group system drmrpc
+    seclabel u:r:hal_keymaster_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-keystore /system/bin/keystore2 /data/misc/keystore
+    user keystore
+    group keystore readproc log
+    rlimit memlock unlimited unlimited
+    seclabel u:r:keystore:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-gnss /vendor/bin/hw/android.hardware.gnss@1.0-service-qti
+    user gps
+    group system gps radio
+    seclabel u:r:hal_gnss_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-audio-hal /vendor/bin/hw/android.hardware.audio.service
+    user audioserver
+    group audio camera drmrpc inet media mediadrm net_bt net_bt_admin net_bw_acct wakelock context_hub system
+    seclabel u:r:hal_audio_default:s0
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/system/lib/bootstrap
+    disabled
+
+service probe-audioserver /system/bin/audioserver
+    user audioserver
+    group audio camera drmrpc media mediadrm net_bt net_bt_admin net_bw_acct wakelock
+    seclabel u:r:audioserver:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled
+
+on property:debug.mainline.audio_ready=1
+    # Set only after staging audio.primary.default in the RAM hw overlay.
+    start probe-audio-hal
+    start probe-audioserver
+
+service tombstoned /system/bin/tombstoned
+    user tombstoned
+    group system
+    socket tombstoned_crash seqpacket 0666 system system
+    socket tombstoned_intercept seqpacket 0666 system system
+    socket tombstoned_java_trace seqpacket 0666 system system
+    seclabel u:r:tombstoned:s0
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/bootstrap
+    disabled

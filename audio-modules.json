@@ -1,0 +1,14 @@
+[
+  "snd.ko",
+  "snd-timer.ko",
+  "snd-pcm.ko",
+  "snd-soc-core.ko",
+  "snd-soc-lpass-platform.ko",
+  "snd-soc-lpass-cpu.ko",
+  "snd-soc-lpass-apq8016.ko",
+  "snd-soc-qcom-common.ko",
+  "snd-soc-apq8016-sbc.ko",
+  "snd-soc-msm8916-analog.ko",
+  "snd-soc-msm8916-digital.ko",
+  "fan54046-monitor.ko"
+]

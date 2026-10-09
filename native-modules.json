@@ -1,0 +1,11 @@
+[
+  "drm_exec.ko",
+  "drm_gpuvm.ko",
+  "gpu-sched.ko",
+  "mdt_loader.ko",
+  "ubwc_config.ko",
+  "cec.ko",
+  "drm_display_helper.ko",
+  "msm.ko",
+  "panel-motorola-osprey-inx.ko"
+]

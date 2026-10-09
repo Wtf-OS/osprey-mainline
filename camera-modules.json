@@ -1,0 +1,14 @@
+[
+  "mc.ko",
+  "videodev.ko",
+  "v4l2-cci.ko",
+  "v4l2-async.ko",
+  "v4l2-fwnode.ko",
+  "videobuf2-common.ko",
+  "videobuf2-memops.ko",
+  "videobuf2-dma-sg.ko",
+  "videobuf2-v4l2.ko",
+  "qcom-camss.ko",
+  "s5k3m2.ko",
+  "i2c-dev.ko"
+]
