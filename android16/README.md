@@ -49,3 +49,18 @@ system/boot rollback. Back up personal data separately.
 The existing libcamera HAL is not integrated into this first Android 16
 package. Camera operation and all other hardware still require on-device
 verification. SELinux remains permissive during bring-up.
+
+## First boot follow-up
+
+The v4 system reaches both init stages, then restarts with
+`bootstrap-apexd-failed`. Its kernel lacks legacy cpuset support required by
+the stock Android 16 cgroup configuration. Kernel v5 enables CPUSETS_V1 and
+PROC_PID_CPUSET; package-kernel-fix.py also installs 56 matching modules and
+an lk2nd build without forced fastboot. Successful Android boot is still
+unconfirmed. The phone's apexd-bootstrap service has stdio_to_kmsg enabled
+for diagnosis; this temporary change is not included in the original v4 ZIP.
+
+build-kernel-cpuset.sh uses a separate mainline-a16-out directory. Future
+full package.py runs require its kernel-fix-manifest.json and a systemimage
+rebuilt with the corresponding module inputs, preventing mixed kernel/module
+versions.

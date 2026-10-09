@@ -14,12 +14,13 @@ props = (product/'system/build.prop').read_text()
 assert 'ro.build.version.sdk=36\n' in props and 'ro.build.version.release=16\n' in props
 assert (product/'root/init.osprey.rc').is_file()
 assert (product/'system/vendor/lib/egl/libEGL_adreno.so').is_file()
-old = (project/'mainline-probe/boot-mainline-android-v58-quota-ipsec.img').read_bytes()
-assert old[:8] == b'ANDROID!'
-ks = struct.unpack_from('<I',old,8)[0]
-page = struct.unpack_from('<I',old,36)[0]
+fix = json.loads((out/'kernel-fix-manifest.json').read_text())
+kernel_input = out/'Image-a16-cpuset.gz-dtb'
+assert digest(kernel_input) == fix['kernel_sha256']
+for module in (product/'system/vendor/lib/modules').glob('*.ko'):
+    assert (b'vermagic='+fix['kernel_release'].encode()+b' ') in module.read_bytes(), 'Rebuild systemimage with matching modules: '+module.name
 kernel = work/'Image.gz-dtb'
-kernel.write_bytes(old[page:page+ks])
+kernel.write_bytes(kernel_input.read_bytes())
 cmdline = ('root=/dev/mmcblk0p41 rootwait rootfstype=ext4 rw init=/init '
            'androidboot.hardware=osprey androidboot.serialno=ZY2223C9DZ '
            'console=ttyMSM0,115200n8 console=tty0 loglevel=7 panic=0 cma=32M '
@@ -32,7 +33,8 @@ subprocess.run(['python3',str(root/'system/tools/mkbootimg/mkbootimg.py'),
                 '--tags_offset','0x01e00000','--pagesize','2048','--cmdline',cmdline,
                 '--output',str(inner)],check=True)
 assert struct.unpack_from('<I',inner.read_bytes(),16)[0] == 0, 'No initramfs requested'
-lk = (project/'mainline-probe/lk2nd-fastboot.img').read_bytes()
+lk = Path('/home/debian/osprey-port/lk2nd-a16-out/build-lk2nd-msm8916/lk2nd.img').read_bytes()
+assert hashlib.sha256(lk).hexdigest() == fix['lk2nd_sha256']
 assert lk[:8] == b'ANDROID!' and len(lk) <= 512*1024
 boot = lk.ljust(512*1024,b'\0') + inner.read_bytes()
 assert len(boot) <= 16*1024*1024
@@ -145,6 +147,6 @@ def create(name,script,images=False):
                             target.write(chunk)
                             remaining -= len(chunk)
     return dict(file=name,sha256=digest(out/name),bytes=(out/name).stat().st_size)
-receipts=[create('osprey-lineage-23.2-mainline-a16-v4-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
+receipts=[create('osprey-lineage-23.2-mainline-a16-v6-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
 (out/'manifest.json').write_text(json.dumps(dict(android=16,sdk=36,initramfs=False,boot_sha256=bootsha,system_sha256=systemsha,kernel_sha256=digest(kernel),cmdline=cmdline,packages=receipts),indent=2)+'\n')
 print(json.dumps(receipts,indent=2))
