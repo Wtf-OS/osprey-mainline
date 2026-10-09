@@ -66,10 +66,17 @@ trap 'rm -rf "$WORK"' EXIT
 check() { [ "$(sha256sum "$1" | cut -d " " -f 1)" = "$2" ] || fail "Checksum: $1"; }
 '''
 installer = preamble + f'''
+system_image() {{
+    index=0
+    while [ "$index" -lt 145 ]; do
+        unzip -p "$ZIP" "$(printf 'system.%03d.img' "$index")" || return 1
+        index=$((index+1))
+    done
+}}
 ui 'Checking Android 16 images before writing'
 unzip -p "$ZIP" boot.img > "$WORK/boot.img"
 check "$WORK/boot.img" {bootsha}
-[ "$(unzip -p "$ZIP" 'system.*.img' | sha256sum | cut -d ' ' -f 1)" = {systemsha} ] || fail 'System image checksum failed'
+[ "$(system_image | sha256sum | cut -d ' ' -f 1)" = {systemsha} ] || fail 'System image checksum failed'
 mkdir -p "$BACKUP"
 if [ ! -f "$BACKUP/complete" ]; then
     ui 'Backing up installed system and boot to internal storage'
@@ -89,7 +96,7 @@ ui 'Installing Android 16 system; Data is not formatted'
 umount /system 2>/dev/null || true
 umount /system_root 2>/dev/null || true
 grep -Eq ' /system(_root)? ' /proc/mounts && fail 'Unmount System in TWRP first'
-unzip -p "$ZIP" 'system.*.img' | dd of="$SYSTEM" bs=1048576 || fail 'System write failed; use rollback ZIP'
+system_image | dd of="$SYSTEM" bs=1048576 || fail 'System write failed; use rollback ZIP'
 sync
 check "$SYSTEM" {systemsha}
 ui 'Installing mainline boot without initramfs'
@@ -138,6 +145,6 @@ def create(name,script,images=False):
                             target.write(chunk)
                             remaining -= len(chunk)
     return dict(file=name,sha256=digest(out/name),bytes=(out/name).stat().st_size)
-receipts=[create('osprey-lineage-23.2-mainline-a16-v3-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
+receipts=[create('osprey-lineage-23.2-mainline-a16-v4-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
 (out/'manifest.json').write_text(json.dumps(dict(android=16,sdk=36,initramfs=False,boot_sha256=bootsha,system_sha256=systemsha,kernel_sha256=digest(kernel),cmdline=cmdline,packages=receipts),indent=2)+'\n')
 print(json.dumps(receipts,indent=2))
