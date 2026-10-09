@@ -5,6 +5,7 @@ on init
     setprop sys.usb.configfs 1
     setprop sys.usb.controller 78d9000.usb
     setprop vendor.hwc.drm.device /dev/dri/card1
+    wait /dev/block/mmcblk0p1 10
     exec_start osprey-hardware
 
 on fs

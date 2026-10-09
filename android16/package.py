@@ -23,7 +23,7 @@ kernel.write_bytes(old[page:page+ks])
 cmdline = ('root=/dev/mmcblk0p41 rootwait rootfstype=ext4 rw init=/init '
            'androidboot.hardware=osprey androidboot.serialno=ZY2223C9DZ '
            'console=ttyMSM0,115200n8 console=tty0 loglevel=7 panic=0 cma=32M '
-           'enforcing=0 selinux=1 lk2nd.pass-simplefb=1 msm.separate_gpu_kms=1 '
+           'enforcing=0 selinux=1 androidboot.selinux=permissive lk2nd.pass-simplefb=1 msm.separate_gpu_kms=1 '
            'clk_ignore_unused pd_ignore_unused regulator_ignore_unused')
 inner = work/'boot-android.img'
 subprocess.run(['python3',str(root/'system/tools/mkbootimg/mkbootimg.py'),
