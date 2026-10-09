@@ -1,0 +1,21 @@
+{
+  "android": 16,
+  "sdk": 36,
+  "initramfs": false,
+  "boot_sha256": "b553d20431a7fb9d6e4725032af4df3f209c4ceba1cff91bb25412033c6c4997",
+  "system_sha256": "d91950e0e1bf6c17f5557fa209fdc9f3134bd1427e6fd0dccd929a1b77b82a86",
+  "kernel_sha256": "edaed0eaf520af88ec37e2c858f9e5cd0597dcadb4663d571c83571f39c22fdd",
+  "cmdline": "root=/dev/mmcblk0p41 rootwait rootfstype=ext4 rw init=/init androidboot.hardware=osprey androidboot.serialno=ZY2223C9DZ console=ttyMSM0,115200n8 console=tty0 loglevel=7 panic=0 cma=32M enforcing=0 selinux=1 androidboot.selinux=permissive lk2nd.pass-simplefb=1 msm.separate_gpu_kms=1 clk_ignore_unused pd_ignore_unused regulator_ignore_unused",
+  "packages": [
+    {
+      "file": "osprey-lineage-23.2-mainline-a16-v1-EXPERIMENTAL.zip",
+      "sha256": "88bfd2b686e7a6993141fd71e363a0e3f27bccc0af71635759275aa18e4683be",
+      "bytes": 774798570
+    },
+    {
+      "file": "osprey-a16-rollback.zip",
+      "sha256": "2521ea3fff3a2e8c5fe8bb775e07954d14fea91a22dd76fc55f663e5b6634a61",
+      "bytes": 1175
+    }
+  ]
+}
