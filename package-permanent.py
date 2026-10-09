@@ -64,8 +64,8 @@ if adb_cmd:
     version = 'v56'
     out = stage / 'permanent-package-v56'
 if strict_runtime:
-    version = 'v57'
-    out = stage / 'permanent-package-v57'
+    version = 'v58'
+    out = stage / 'permanent-package-v58'
 out.mkdir(exist_ok=True)
 sha=lambda b:hashlib.sha256(b).hexdigest()
 lk=(stage/'lk2nd-fastboot.img').read_bytes()
@@ -81,7 +81,7 @@ if tethering:
     android = (stage / 'boot-mainline-android-v52-tethering.img').read_bytes()
     assert android[:8] == b'ANDROID!'
 if strict_runtime:
-    android = (stage / 'boot-mainline-android-v57-strict-runtime.img').read_bytes()
+    android = (stage / 'boot-mainline-android-v58-quota-ipsec.img').read_bytes()
     assert android[:8] == b'ANDROID!'
 assert len(lk)<=512*1024
 boot=lk.ljust(512*1024,b'\0')+android
@@ -127,7 +127,7 @@ if wifi_compat:
 if adb_cmd:
     files['adb-cmd.sh'] = (stage / 'adb-cmd.sh').read_bytes()
 if strict_runtime:
-    for name in ['libprocessgroup.so','libutils.so','netd','netd.rc','mount.sh','xt_policy.ko','xt_u32.ko']:
+    for name in ['libprocessgroup.so','libutils.so','netd','netd.rc','mount.sh','xt_policy.ko','xt_u32.ko','xt_quota2.ko']:
         files['strict-runtime/'+name] = (stage.parent / 'strict-runtime' / name).read_bytes()
     files['strict-runtime/enabled'] = b'1\n'
 if camera:

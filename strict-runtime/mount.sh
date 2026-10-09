@@ -2,7 +2,7 @@
 set -e
 export LD_LIBRARY_PATH=/sbin
 [ -f /data/strict-runtime/enabled ] || exit 0
-for name in xt_policy xt_u32; do
+for name in xt_policy xt_u32 xt_quota2; do
     if ! /sbin/toybox grep -q "^$name " /proc/modules; then
         /sbin/toybox insmod /data/strict-runtime/$name.ko
     fi
