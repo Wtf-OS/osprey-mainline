@@ -69,7 +69,7 @@ installer = preamble + f'''
 ui 'Checking Android 16 images before writing'
 unzip -p "$ZIP" boot.img > "$WORK/boot.img"
 check "$WORK/boot.img" {bootsha}
-[ "$(unzip -p "$ZIP" system.img | sha256sum | cut -d ' ' -f 1)" = {systemsha} ] || fail 'System image checksum failed'
+[ "$(unzip -p "$ZIP" system.0.img system.1.img | sha256sum | cut -d ' ' -f 1)" = {systemsha} ] || fail 'System image checksum failed'
 mkdir -p "$BACKUP"
 if [ ! -f "$BACKUP/complete" ]; then
     ui 'Backing up installed system and boot to internal storage'
@@ -89,7 +89,7 @@ ui 'Installing Android 16 system; Data is not formatted'
 umount /system 2>/dev/null || true
 umount /system_root 2>/dev/null || true
 grep -Eq ' /system(_root)? ' /proc/mounts && fail 'Unmount System in TWRP first'
-unzip -p "$ZIP" system.img | dd of="$SYSTEM" bs=1048576 || fail 'System write failed; use rollback ZIP'
+unzip -p "$ZIP" system.0.img system.1.img | dd of="$SYSTEM" bs=1048576 || fail 'System write failed; use rollback ZIP'
 sync
 check "$SYSTEM" {systemsha}
 ui 'Installing mainline boot without initramfs'
@@ -114,15 +114,28 @@ check "$BOOT" "$(cat "$BACKUP/boot.sha256")"
 ui 'Previous system and boot restored. User data was preserved.'
 '''
 def create(name,script,images=False):
-    with zipfile.ZipFile(out/name,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+    with zipfile.ZipFile(out/name,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=False) as z:
         info=zipfile.ZipInfo('META-INF/com/google/android/update-binary')
         info.external_attr=0o100755 << 16
         info.compress_type=zipfile.ZIP_DEFLATED
         z.writestr(info,script)
         z.writestr('META-INF/com/google/android/updater-script','# Shell installer\n')
         if images:
-            z.write(bootfile,'boot.img'); z.write(raw,'system.img')
+            z.write(bootfile,'boot.img')
+            # TWRP's old unzip rejects ZIP64; stream two ordered parts under 2 GiB.
+            with raw.open('rb') as source:
+                for index, size in enumerate((raw.stat().st_size // 2, raw.stat().st_size - raw.stat().st_size // 2)):
+                    info = zipfile.ZipInfo(f'system.{index}.img')
+                    info.file_size = size
+                    info.compress_type = zipfile.ZIP_DEFLATED
+                    with z.open(info, 'w') as target:
+                        remaining = size
+                        while remaining:
+                            chunk = source.read(min(1024*1024, remaining))
+                            assert chunk, 'Truncated system image'
+                            target.write(chunk)
+                            remaining -= len(chunk)
     return dict(file=name,sha256=digest(out/name),bytes=(out/name).stat().st_size)
-receipts=[create('osprey-lineage-23.2-mainline-a16-v1-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
+receipts=[create('osprey-lineage-23.2-mainline-a16-v2-EXPERIMENTAL.zip',installer,True),create('osprey-a16-rollback.zip',rollback)]
 (out/'manifest.json').write_text(json.dumps(dict(android=16,sdk=36,initramfs=False,boot_sha256=bootsha,system_sha256=systemsha,kernel_sha256=digest(kernel),cmdline=cmdline,packages=receipts),indent=2)+'\n')
 print(json.dumps(receipts,indent=2))
