@@ -1,12 +1,12 @@
 [
   {
     "path": "device/motorola/osprey",
-    "commit": "d201290459883321a5c2abc2a4c807f7f83312e6",
+    "commit": "1662cf8c195ecf6cc97c19841f3714bca568c024",
     "branch": "lineage-23.2-mainline"
   },
   {
     "path": "device/motorola/msm8916-common",
-    "commit": "9bfbbfeda9e4b1be0ee1d787655e934748de4918",
+    "commit": "0a1e899328e552e717d01608020dcea54f5d5b96",
     "branch": "lineage-23.2-mainline"
   },
   {
