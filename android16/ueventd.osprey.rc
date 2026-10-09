@@ -1,0 +1,5 @@
+/dev/dri/* 0660 system graphics
+/dev/snd/* 0660 system audio
+/dev/input/* 0660 root input
+/dev/video* 0660 system camera
+/sys/class/backlight/osprey-backlight brightness 0660 system system

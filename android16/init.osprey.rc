@@ -1,0 +1,34 @@
+on early-init
+    mount tmpfs tmpfs /metadata mode=0755
+
+on init
+    setprop sys.usb.configfs 1
+    setprop sys.usb.controller 78d9000.usb
+    setprop vendor.hwc.drm.device /dev/dri/card1
+    exec_start osprey-hardware
+
+on fs
+    mount_all /vendor/etc/fstab.osprey --early
+
+on late-fs
+    mount_all /vendor/etc/fstab.osprey --late
+
+on boot
+    setprop sys.usb.config adb
+
+service osprey-hardware /system/bin/sh /vendor/bin/osprey-hardware.sh
+    user root
+    group root
+    oneshot
+    disabled
+    seclabel u:r:init:s0
+    stdio_to_kmsg
+
+on property:sys.boot_completed=1
+    stop osprey-boot-log
+
+service osprey-boot-log /system/bin/logcat -b all -v threadtime -f /data/local/tmp/osprey-a16-boot.log -r 4096 -n 3
+    user root
+    group root log readproc
+    class late_start
+    seclabel u:r:shell:s0
