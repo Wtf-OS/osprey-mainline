@@ -1,5 +1,11 @@
-/dev/dri/* 0660 system graphics
+/dev/dri/card* 0660 system graphics
+/dev/dri/renderD* 0666 system graphics
 /dev/snd/* 0660 system audio
 /dev/input/* 0660 root input
 /dev/video* 0660 system camera
 /sys/class/backlight/osprey-backlight brightness 0660 system system
+/dev/media* 0660 cameraserver camera
+/dev/v4l-subdev* 0660 cameraserver camera
+/sys/class/leds/osprey:flash brightness 0660 cameraserver camera
+/sys/class/leds/osprey:flash flash_strobe 0660 cameraserver camera
+/dev/dma_heap/system 0664 system camera

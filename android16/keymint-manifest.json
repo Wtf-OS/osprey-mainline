@@ -1,0 +1,24 @@
+{
+  "package": "osprey-a16-v10-keymint.zip",
+  "software_only": true,
+  "tee_protection": false,
+  "files": {
+    "bin/hw/android.hardware.security.keymint-service": "43cb9567023c6967a86d87070947af0c35eb3ba5f4e35a8fbc799e6ff3d285af",
+    "etc/init/android.hardware.security.keymint-service.rc": "045cd6b62ddcadcc86eb0eac6b94c343eec1588ce45450d6aa592a45ddedd722",
+    "etc/vintf/manifest/android.hardware.security.keymint-service.xml": "e32fd51f82182845253d9cac4539ad0078317c864ad1614f7edf19685138db9b",
+    "etc/vintf/manifest/android.hardware.security.sharedsecret-service.xml": "4a695ea68f735c7501a4ee885a28ed0dee8f533b1975c4d297c896a28766b9ff",
+    "etc/vintf/manifest/android.hardware.security.secureclock-service.xml": "f46ca5fbae32a642f89d4dfaa4b6623781a3df42d3608d29308c301f18c2c70b",
+    "lib/android.hardware.security.keymint-V4-ndk.so": "d324acd2cbb88f77fa7b9153b6dbac52061be62e7d0b32162cf4641103a74cc0",
+    "lib/android.hardware.security.rkp-V3-ndk.so": "f5065766f09d28c646ba55f1ed1239d44e2502d056b2eb8acfdff15508e4464e",
+    "lib/android.hardware.security.sharedsecret-V1-ndk.so": "9e40e05286e048262985ce787c4b96d01714c982ae0d3e58faaeb2499f98705b",
+    "lib/libcppbor.so": "01681de387818e8df561d1e7c44b39269a58ce8858cd09041c95490a5f392cf4",
+    "lib/libkeymaster_portable.so": "42543fb53f10223802e30d582a55e2b3dd0de3b0b7f62f62cb711cd5d40e2689",
+    "lib/libkeymint.so": "ba7b1eb516499500ebb3f1566e2bf60154d75de54e961b3205a6a16433d038cf",
+    "lib/libpuresoftkeymasterdevice.so": "15c52bdf3d192ebdf09c546b203c0431b7b2376f51bb19658ec102824afd1785",
+    "lib/libkeymaster_messages.so": "9a9fe21f62db5fe1831c4ce2b03efd602f67b569e55f952d41fa3fa541b19df1",
+    "lib/libsoft_attestation_cert.so": "5e2561aecfb97c463780af2a593c5f128e1aab84e0f78f96e01f8a0406fb8645",
+    "lib/libcppcose_rkp.so": "bd6342360a531d3dac4b8b3e38c25144603f82e88dd7509e96d759ba020ce31c",
+    "lib/lib_android_keymaster_keymint_utils.so": "c6487bb1730dcbb4248b8d3bbae680001a0907f8c35009f90829c83a26432ce4"
+  },
+  "package_sha256": "bc3f0831ab0267b889760d7b31a79c5815452c7411a8efc4ed36af1198c4e8cf"
+}

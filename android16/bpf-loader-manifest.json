@@ -1,0 +1,14 @@
+{
+  "package": "osprey-a16-v11-bpf-loader.zip",
+  "files": {
+    "system/apex/com.android.tethering.capex": {
+      "before": "f9d16ef3e5f2242851e308d2449dffdddd9eae909aba85ac4543d9e47b11aecd",
+      "after": "80e5d3326a05cdaa32b134fa612a27ab07f51cafec372b43d61589c41bc7550f"
+    },
+    "system/vendor/build.prop": {
+      "before": "d1ed21b7286f967f8373f9e302713f983b23148b9935600f744db56b1dce0330",
+      "after": "6c7f3e521ec652b9029316d90e970f0a84c1003f892dc0ba36503d880a055d41"
+    }
+  },
+  "package_sha256": "30c067a339125aaaf3667397fd671367fb94ac81b8e7c2b97bcd2e5f5c2f16fd"
+}

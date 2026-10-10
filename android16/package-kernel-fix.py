@@ -43,7 +43,7 @@ for asset in sorted(assets.glob('*.ko')):
     data = matches[0].read_bytes()
     assert (b'vermagic=' + release.encode() + b' ') in data, asset.name
     modules[asset.name] = data
-assert len(modules) == 56
+assert len(modules) == 57 and 'af_key.ko' in modules
 module_checksums = ''.join(hashlib.sha256(data).hexdigest()+'  '+name+'\n' for name, data in modules.items())
 script = f'''#!/sbin/sh
 set -eu

@@ -1,0 +1,7 @@
+# FAST filters chroma; HIGH_QUALITY also filters low-contrast luminance.
+version: 1
+configuration:
+  software_isp:
+    chroma_denoise: true
+    colour_boost: true
+    luma_denoise: true

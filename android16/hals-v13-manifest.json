@@ -1,0 +1,18 @@
+{
+  "package": "osprey-a16-v13-hals.zip",
+  "files": {
+    "lib/hw/gralloc.minigbm_msm.so": "c7e6746c12422217d5f919b605dd7ca20afffd82226d42581b6cfe43e8acedfb",
+    "bin/hw/android.hardware.composer.hwc3-service.drm": "a61aa403302af8059074bb08385031dc592e8237019a3080bb7c5fdff3b87ad2",
+    "lib/hw/android.hardware.audio@6.0-impl.so": "7af04619073b7c1b2a2796572600007927f3c25de69fbabdaf838476a4e29d5b",
+    "lib/hw/android.hardware.audio.effect@6.0-impl.so": "e34d8bb7e9c83b1ffc432becfd7d947c36d0f87784d274a4bf1d674c0c954970",
+    "lib/android.hardware.audio.common@6.0.so": "5fbcec71b35e8f0f53eece3ecc710d7563075ccd0b12cab5517142876ae50fca",
+    "lib/android.hardware.audio.common@6.0-util.so": "057cef0654b4f2128e6662087f7f38bc52d8269b183f0ff82c69c8674ef1bdea",
+    "lib/android.hardware.audio.effect@6.0.so": "36a4208e099ada167418740d6efaa808b1b095120dab33f4ac53fcfe30eaf3d7",
+    "lib/android.hardware.audio.effect@6.0-util.so": "830fd7a90ad5b6855d05c000f7824da0057eaac2f110401655c30827307ec42b",
+    "lib/android.hidl.safe_union@1.0.so": "45436f43437ecc5a5fe4fde42a79b028ca8597c6bd309ed736f278c3c3f0c282",
+    "lib/android.hardware.audio@6.0.so": "e346a4c74aba23060b1bceb06c748441bd2d13436940b597abddd93e458de41b",
+    "lib/android.hardware.audio@6.0-util.so": "efdef8b5dc70c321ba447a492c373b914fda8f8d464555984283c878063e14cf",
+    "etc/vintf/manifest.xml": "9b7c7d1b281fa9970d6579a90044e290fca14ce5726c9133225f76f7a7e59583"
+  },
+  "package_sha256": "6520949b59ab4be41cf92ebda5a180251a93f6cd8638807915906f4804a26e82"
+}

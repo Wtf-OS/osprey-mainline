@@ -1,0 +1,11 @@
+{
+  "package": "osprey-a16-v30-bt-stats.zip",
+  "package_sha256": "a2ff2820cfd9aa9083b05147937e962d3e9fedebf64e58004e01e1414838828c",
+  "files": {
+    "framework/services.jar": "11a4023aae3a2ace538f0f388758a7bca834183c93c9ade495186e200f3be2ec",
+    "framework/services.jar.prof": "a5693b952186d6657999e3d3c5afc42cc4ddb28cc138335b3ccd80e1b7490657",
+    "framework/oat/arm/services.art": "dbfd661923b81fad73d469bc4b444851e840f8da3aa8aff8055694d89537f88b",
+    "framework/oat/arm/services.odex": "eeaae09c98a0b207a421a3a2fc267845f6808322709c4dfff2bd7d2f3f2869a5",
+    "framework/oat/arm/services.vdex": "29635fd0bfb0a065dbf3afcffeb8138ae3f80206d88fdb1dd6d6c4e59d37ecf9"
+  }
+}

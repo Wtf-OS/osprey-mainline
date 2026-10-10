@@ -1,0 +1,7 @@
+{
+  "package": "osprey-a16-v18-usb-init.zip",
+  "files": {
+    "init.osprey.rc": "9a1164b76c4e7a4d8d9765cefdceb1416ee762c165de2f5ded47ca0bec78393e"
+  },
+  "package_sha256": "2ef57a07dee40ccbe0539d3a7fbf85ee4096c3301e7f4e94b2c6e45f001041b7"
+}

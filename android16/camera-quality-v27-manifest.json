@@ -1,0 +1,7 @@
+{
+  "package": "osprey-a16-v27-camera-quality.zip",
+  "files": {
+    "etc/libcamera/configuration.yaml": "13d0337c12ff4469b819ea37c71f85f4d125af184da1cce3b3dcc00151522c9a"
+  },
+  "package_sha256": "27b0a097be1fa493c843e58c5f8cc0cb03ae0a6003008f0cd311ccd0406d41aa"
+}

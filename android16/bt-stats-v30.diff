@@ -1,0 +1,26 @@
+diff --git a/services/core/java/com/android/server/power/stats/BatteryExternalStatsWorker.java b/services/core/java/com/android/server/power/stats/BatteryExternalStatsWorker.java
+index f8b83d950..aa70e017e 100644
+--- a/services/core/java/com/android/server/power/stats/BatteryExternalStatsWorker.java
++++ b/services/core/java/com/android/server/power/stats/BatteryExternalStatsWorker.java
+@@ -452,7 +452,7 @@ public class BatteryExternalStatsWorker implements BatteryStatsImpl.ExternalStat
+             } else {
+                 // We were asked to fetch Bluetooth data.
+                 final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+-                if (adapter != null) {
++                if (adapter != null && adapter.isLeEnabled()) {
+                     SynchronousResultReceiver resultReceiver =
+                             new SynchronousResultReceiver("bluetooth");
+                     adapter.requestControllerActivityEnergyInfo(
+diff --git a/services/core/java/com/android/server/power/stats/BatteryStatsImpl.java b/services/core/java/com/android/server/power/stats/BatteryStatsImpl.java
+index 574abe634..a722f23e7 100644
+--- a/services/core/java/com/android/server/power/stats/BatteryStatsImpl.java
++++ b/services/core/java/com/android/server/power/stats/BatteryStatsImpl.java
+@@ -464,7 +464,7 @@ public class BatteryStatsImpl extends BatteryStats {
+             }
+ 
+             BluetoothAdapter adapter = mBluetoothManager.getAdapter();
+-            if (adapter == null) {
++            if (adapter == null || !adapter.isLeEnabled()) {
+                 return false;
+             }
+ 

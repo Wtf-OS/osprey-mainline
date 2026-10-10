@@ -1,0 +1,22 @@
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index 41196d1..4d02190 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -19,7 +19,7 @@ BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE := ext4
+ BOARD_FLASH_BLOCK_SIZE := 131072
+ TARGET_USERIMAGES_USE_EXT4 := true
+ 
+-BOARD_WLAN_DEVICE := wlan0
++BOARD_WLAN_DEVICE := qcwcn
+ BOARD_WPA_SUPPLICANT_DRIVER := NL80211
+ BOARD_HOSTAPD_DRIVER := NL80211
+ WPA_SUPPLICANT_VERSION := VER_0_8_X
+@@ -37,4 +37,7 @@ BOARD_VENDOR_KERNEL_MODULES += $(wildcard device/motorola/msm8916-common/mainlin
+ 
+ BOARD_VENDOR_SEPOLICY_DIRS += device/motorola/msm8916-common/mainline-boot/sepolicy
+ 
+-DEVICE_MANIFEST_FILE := device/motorola/msm8916-common/mainline-boot/manifest.xml
++DEVICE_MANIFEST_FILE := device/motorola/msm8916-common/mainline-boot/manifest.xml \
++    device/motorola/msm8916-common/mainline-camera/camera-provider.xml
++
++$(call soong_config_set,minigbm,platform,msm)

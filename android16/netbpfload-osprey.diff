@@ -1,0 +1,34 @@
+diff --git a/bpf/loader/NetBpfLoad.cpp b/bpf/loader/NetBpfLoad.cpp
+index 2388647..255831a 100644
+--- a/bpf/loader/NetBpfLoad.cpp
++++ b/bpf/loader/NetBpfLoad.cpp
+@@ -1580,6 +1580,10 @@ static int doLoad(char** argv, char * const envp[]) {
+     const bool runningAsRoot = !getuid();  // true iff U QPR3 or V+
+ 
+     const int first_api_level = GetIntProperty("ro.board.first_api_level", api_level_full / 100);
++    const bool ospreyKernelUpRev = first_api_level <= 33 && isArm() &&
++            !isKernel32Bit() && isUserspace32bit() &&
++            GetProperty("ro.hardware", "") == "osprey" &&
++            GetProperty("ro.vendor.osprey.mainline_bpf_compat", "") == "1";
+ 
+     // last in U QPR2 beta1
+     const bool has_platform_bpfloader_rc = exists("/system/etc/init/bpfloader.rc");
+@@ -1740,12 +1744,17 @@ static int doLoad(char** argv, char * const envp[]) {
+     // Since officially Android only supports LTS, 6.13+ really means 6.18+,
+     // and won't be supported before 2026, most likely Android 17 / 26Q2.
+     // 6.13+ (implying 26Q2+) requires 64-bit userspace.
+-    if (isUserspace32bit() && isAtLeastKernelVersion(6, 13)) {
++    // shortcut: experimental osprey kernel upgrade; remove when system userspace becomes ARM64.
++    if (isUserspace32bit() && isAtLeastKernelVersion(6, 13) && !ospreyKernelUpRev) {
+         // due to previous check only reachable on Arm && (<=T kernel uprev || TV || Wear)
+         ALOGE("64-bit userspace required on 6.13+ kernels.");
+         return 14;
+     }
+ 
++    if (ospreyKernelUpRev) {
++        ALOGW("Experimental osprey ARM32 kernel upgrade: continuing with full BPF load checks.");
++    }
++
+     if (isAtLeast25Q2) {
+         FILE * f = fopen("/system/etc/init/netbpfload.rc", "re");
+         if (!f) {

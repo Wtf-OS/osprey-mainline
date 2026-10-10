@@ -7,6 +7,7 @@ load() {
         insmod "/vendor/lib/modules/$name.ko" "$@"
     fi
 }
+load fuse
 mkdir -p /config /dev/usb-ffs/adb
 grep -q " /config " /proc/mounts || mount -t configfs configfs /config
 G=/config/usb_gadget/g1
@@ -34,7 +35,8 @@ fi
 load msm separate_gpu_kms=1
 for name in rmi_core rmi_i2c max17042_battery snd snd-timer snd-pcm snd-soc-core snd-soc-lpass-platform snd-soc-lpass-cpu snd-soc-lpass-apq8016 snd-soc-qcom-common snd-soc-apq8016-sbc snd-soc-msm8916-analog snd-soc-msm8916-digital; do load "$name"; done
 load fan54046-monitor control_charging=1
-for name in btqca btqcomsmd xt_policy xt_u32 xt_quota2 lzo_compress zsmalloc zram; do load "$name"; done
+for name in af_key btqca btqcomsmd xt_policy xt_u32 xt_quota2 lzo_compress zsmalloc zram; do load "$name"; done
+for name in i2c-qcom-cci osprey-camera-id mc videodev v4l2-cci v4l2-async v4l2-fwnode videobuf2-common videobuf2-memops videobuf2-dma-sg videobuf2-v4l2 qcom-camss ak7375 s5k3m2 s5k5e2 i2c-dev led-class-flash leds-sky81296; do load "$name"; done
 echo 536870912 > /sys/block/zram0/disksize
 mkswap /dev/block/zram0
 swapon /dev/block/zram0

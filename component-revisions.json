@@ -1,12 +1,12 @@
 [
   {
     "path": "device/motorola/osprey",
-    "commit": "1662cf8c195ecf6cc97c19841f3714bca568c024",
+    "commit": "86a5caa34d83a7b584d70b101e600078105e2228",
     "branch": "lineage-23.2-mainline"
   },
   {
     "path": "device/motorola/msm8916-common",
-    "commit": "0a1e899328e552e717d01608020dcea54f5d5b96",
+    "commit": "47b1d0313bd09bfc69f332e1576e14e23febfb59",
     "branch": "lineage-23.2-mainline"
   },
   {
@@ -41,12 +41,12 @@
   },
   {
     "path": "external/minigbm",
-    "commit": "816d41d7d149fed2d661fdfd3326b5bced9ce345",
+    "commit": "aaaad922768afcf1c96eac4f514ff2c12fef8c5b",
     "branch": "lineage-23.2-mainline"
   },
   {
     "path": "external/drm_hwcomposer",
-    "commit": "27226af23d0a8c122ab11a899e37362c33a12ed9",
+    "commit": "21b7685a27a54050263c66cf67bbe240e3eae1f5",
     "branch": "lineage-23.2-mainline"
   },
   {
@@ -72,6 +72,26 @@
   {
     "path": "external/XMP-Toolkit-SDK",
     "commit": "18df40b8f34d4944d2142afcb1b5b517c627fc9f",
+    "branch": "lineage-23.2-mainline"
+  },
+  {
+    "path": "frameworks/base",
+    "commit": "58e466f3f4a8474a790a2c9336c11d22dd6f7d7d",
+    "branch": "lineage-23.2-mainline"
+  },
+  {
+    "path": "external/wpa_supplicant_8",
+    "commit": "be2de7b4ffd85e88f01abf81d126fd03108bb283",
+    "branch": "lineage-23.2-mainline"
+  },
+  {
+    "path": "hardware/qcom/wlan",
+    "commit": "ef367d6c1fc446d4dc74076329bc8124ffc74845",
+    "branch": "lineage-23.2-mainline"
+  },
+  {
+    "path": "packages/modules/Connectivity",
+    "commit": "85731d2b51b23eb04cd5a46a0e2069865ce391fb",
     "branch": "lineage-23.2-mainline"
   }
 ]

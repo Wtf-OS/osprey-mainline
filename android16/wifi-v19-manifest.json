@@ -1,0 +1,8 @@
+{
+  "package": "osprey-a16-v19-wifi.zip",
+  "files": {
+    "lib/libwifi-hal.so": "13f6893bd7fa5a8f673c1433426f8ba6de2832e4c213dd555e4b900527726bae",
+    "lib/libcld80211.so": "3b5d4c7304bf30f6e7d08ab28a6d2a8e4e4c92a54bc581f670c7d1a1a314f0e0"
+  },
+  "package_sha256": "c4d783835cc408d6ca6c943f49f9703c4b366b9efebe4140faa7d0453ac18ac6"
+}

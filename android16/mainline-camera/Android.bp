@@ -1,0 +1,59 @@
+cc_prebuilt_library_shared {
+    name: "libcamera_osprey",
+    vendor: true,
+    compile_multilib: "32",
+    stem: "libcamera",
+    srcs: ["prebuilt/libcamera.so"],
+    shared_libs: ["libcamera_osprey_base", "libyuv"],
+    strip: { none: true },
+}
+
+cc_prebuilt_library_shared {
+    name: "libcamera_osprey_base",
+    vendor: true,
+    compile_multilib: "32",
+    stem: "libcamera-base",
+    srcs: ["prebuilt/libcamera-base.so"],
+    shared_libs: [],
+    strip: { none: true },
+}
+
+cc_prebuilt_library_shared {
+    name: "libcamera-hal",
+    vendor: true,
+    compile_multilib: "32",
+    stem: "libcamera-hal",
+    srcs: ["prebuilt/libcamera-hal.so"],
+    shared_libs: ["libcamera_osprey", "libcamera_osprey_base", "libexif", "libjpeg", "libyuv", "libcamera_metadata", "libhardware"],
+    strip: { none: true },
+    relative_install_path: "hw",
+}
+
+cc_prebuilt_library_shared {
+    name: "ipa_softisp",
+    vendor: true,
+    compile_multilib: "32",
+    stem: "ipa_softisp",
+    srcs: ["prebuilt/ipa_softisp.so"],
+    shared_libs: ["libcamera_osprey", "libcamera_osprey_base"],
+    strip: { none: true },
+    relative_install_path: "libcamera/ipa",
+}
+
+cc_prebuilt_binary {
+    name: "softisp_ipa_proxy",
+    vendor: true,
+    compile_multilib: "32",
+    stem: "softisp_ipa_proxy",
+    srcs: ["prebuilt/softisp_ipa_proxy"],
+    shared_libs: ["libcamera_osprey", "libcamera_osprey_base"],
+    strip: { none: true },
+    relative_install_path: "libcamera",
+}
+
+install_symlink {
+    name: "osprey_camera_hal_alias",
+    soc_specific: true,
+    installed_location: "lib/hw/camera.osprey.so",
+    symlink_target: "libcamera-hal.so",
+}

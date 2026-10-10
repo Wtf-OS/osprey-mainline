@@ -1,0 +1,44 @@
+diff --git a/mainline-boot/init.osprey.rc b/mainline-boot/init.osprey.rc
+index 4240635..da1704f 100644
+--- a/mainline-boot/init.osprey.rc
++++ b/mainline-boot/init.osprey.rc
+@@ -2,6 +2,7 @@ on early-init
+     mount tmpfs tmpfs /metadata mode=0755
+ 
+ on init
++    start osprey-early-log
+     setprop sys.usb.configfs 1
+     setprop sys.usb.controller 78d9000.usb
+     setprop vendor.hwc.drm.device /dev/dri/card1
+@@ -33,3 +34,17 @@ service osprey-boot-log /system/bin/logcat -b all -v threadtime -f /data/local/t
+     group root log readproc
+     class late_start
+     seclabel u:r:shell:s0
++
++# Capture the early abort reason before log files on Data are available.
++service osprey-early-log /system/bin/logcat -b all -v threadtime -s keystore2:W libc:F DEBUG:F crash_dump32:W tombstoned:W
++    disabled
++    user root
++    group root log readproc
++    seclabel u:r:shell:s0
++    stdio_to_kmsg
++
++on property:sys.boot_completed=1
++    stop osprey-early-log
++
++on post-fs-data
++    start osprey-boot-log
+diff --git a/mainline.mk b/mainline.mk
+index 734b1dd..ab34256 100644
+--- a/mainline.mk
++++ b/mainline.mk
+@@ -51,3 +51,9 @@ PRODUCT_COPY_FILES += \
+     device/motorola/msm8916-common/mainline-boot/firmware/a300_pm4.fw:system/vendor/firmware/qcom/a300_pm4.fw
+ 
+ PRODUCT_PACKAGES += ueventd.qcom.rc
++
++# Software-only KeyMint for mainline bring-up; no TEE-backed key protection.
++PRODUCT_PACKAGES += android.hardware.security.keymint-service
++
++# Osprey shipped with Android 5.1; retain ARM32 while validating mainline BPF.
++PRODUCT_VENDOR_PROPERTIES += ro.board.first_api_level=22 ro.vendor.osprey.mainline_bpf_compat=1

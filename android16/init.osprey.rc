@@ -2,6 +2,8 @@ on early-init
     mount tmpfs tmpfs /metadata mode=0755
 
 on init
+    start osprey-early-log
+    mkdir /dev/usb-ffs 0775 shell shell
     setprop sys.usb.configfs 1
     setprop sys.usb.controller 78d9000.usb
     setprop vendor.hwc.drm.device /dev/dri/card1
@@ -15,6 +17,7 @@ on late-fs
     mount_all /vendor/etc/fstab.osprey --late
 
 on boot
+    setprop sys.usb.configfs 1
     setprop sys.usb.config adb
 
 service osprey-hardware /system/bin/sh /vendor/bin/osprey-hardware.sh
@@ -33,3 +36,17 @@ service osprey-boot-log /system/bin/logcat -b all -v threadtime -f /data/local/t
     group root log readproc
     class late_start
     seclabel u:r:shell:s0
+
+# Capture the early abort reason before log files on Data are available.
+service osprey-early-log /system/bin/logcat -b all -v threadtime -s keystore2:W libc:F DEBUG:F crash_dump32:W tombstoned:W
+    disabled
+    user root
+    group root log readproc
+    seclabel u:r:shell:s0
+    stdio_to_kmsg
+
+on property:sys.boot_completed=1
+    stop osprey-early-log
+
+on post-fs-data
+    start osprey-boot-log

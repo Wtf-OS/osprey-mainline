@@ -1,0 +1,7 @@
+{
+  "package": "osprey-a16-v17-gpu-access.zip",
+  "files": {
+    "etc/ueventd.rc": "85290503a22d7313cc1b5b5edb023ee4288ea8a2094ff6a3429e0e4998f132ca"
+  },
+  "package_sha256": "efe3864c8bca380591ab7755c772feceb10a83f89fcad761d337d2e31dda9dec"
+}

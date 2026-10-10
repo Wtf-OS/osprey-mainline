@@ -1,0 +1,8 @@
+{
+  "package": "osprey-a16-v15-pfkey.zip",
+  "files": {
+    "bin/osprey-hardware.sh": "bc90d83f7b72ae895d755e9223e4f6555b80dcbe99c00bd78bc4ea5eeb8abae5",
+    "lib/modules/af_key.ko": "5d20885ad12ff493ec9e02fae9f71d0c2600d00c29a28e814cbd4bbf6607525b"
+  },
+  "package_sha256": "369491006f1a9e1c61bd6425e2c39c2a13b3673a30c36a71985543c9116f967b"
+}

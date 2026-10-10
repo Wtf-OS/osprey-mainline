@@ -1,0 +1,7 @@
+{
+  "package": "osprey-a16-v16-vintf.zip",
+  "files": {
+    "etc/vintf/manifest.xml": "a78a6e181a3855da1d5e3df45bd5f3db87c2e27b75abe8124eac0871bd1dd67f"
+  },
+  "package_sha256": "693a5cd49a4af38023e85f52934b8ae5bdd8778e1d5ec03ff4a16991a2eb2b2c"
+}

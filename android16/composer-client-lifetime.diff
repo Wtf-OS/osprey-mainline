@@ -1,0 +1,17 @@
+diff --git a/hwc3/ComposerClient.cpp b/hwc3/ComposerClient.cpp
+index eeb4573..eb53f77 100644
+--- a/hwc3/ComposerClient.cpp
++++ b/hwc3/ComposerClient.cpp
+@@ -505,8 +505,10 @@ ComposerClient::~ComposerClient() {
+   DEBUG_FUNC();
+   stats_poller_.reset();
+   if (hwc_) {
+-    const std::unique_lock lock(hwc_->GetResMan().GetMainLock());
+-    hwc_->DeinitDisplays();
++    {
++      const std::unique_lock lock(hwc_->GetResMan().GetMainLock());
++      hwc_->DeinitDisplays();
++    }
+     hwc_.reset();
+   }
+   LOG(DEBUG) << "removed composer client";

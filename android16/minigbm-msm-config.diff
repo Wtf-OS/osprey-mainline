@@ -1,0 +1,10 @@
+diff --git a/BoardConfig.mk b/BoardConfig.mk
+index 41196d1..b5e1a13 100644
+--- a/BoardConfig.mk
++++ b/BoardConfig.mk
+@@ -38,3 +38,5 @@ BOARD_VENDOR_KERNEL_MODULES += $(wildcard device/motorola/msm8916-common/mainlin
+ BOARD_VENDOR_SEPOLICY_DIRS += device/motorola/msm8916-common/mainline-boot/sepolicy
+ 
+ DEVICE_MANIFEST_FILE := device/motorola/msm8916-common/mainline-boot/manifest.xml
++
++$(call soong_config_set,minigbm,platform,msm)

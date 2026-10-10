@@ -1,0 +1,25 @@
+diff --git a/wpa_supplicant/aidl/vendor/sta_iface.cpp b/wpa_supplicant/aidl/vendor/sta_iface.cpp
+index 3543602..0ab0b33 100644
+--- a/wpa_supplicant/aidl/vendor/sta_iface.cpp
++++ b/wpa_supplicant/aidl/vendor/sta_iface.cpp
+@@ -1426,6 +1426,12 @@ ndk::ScopedAStatus StaIface::setBtCoexistenceScanModeEnabledInternal(bool enable
+ 
+ ndk::ScopedAStatus StaIface::setSuspendModeEnabledInternal(bool enable)
+ {
++#ifdef ANDROID_LIB_STUB
++	/* Mainline drivers use nl80211 power save, not vendor private commands. */
++	if (wpa_drv_set_p2p_powersave(retrieveIfacePtr(), enable, -1, -1))
++		return createStatus(SupplicantStatusCode::FAILURE_UNKNOWN);
++	return ndk::ScopedAStatus::ok();
++#else
+ 	const char *cmd;
+ 	if (enable) {
+ 		cmd = kSetSupendModeEnabled;
+@@ -1433,6 +1439,7 @@ ndk::ScopedAStatus StaIface::setSuspendModeEnabledInternal(bool enable)
+ 		cmd = kSetSupendModeDisabled;
+ 	}
+ 	return doZeroArgDriverCommand(retrieveIfacePtr(), cmd);
++#endif
+ }
+ 
+ ndk::ScopedAStatus StaIface::setCountryCodeInternal(

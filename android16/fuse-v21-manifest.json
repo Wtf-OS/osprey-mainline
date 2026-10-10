@@ -1,0 +1,6 @@
+{
+  "before_sha256": "bc90d83f7b72ae895d755e9223e4f6555b80dcbe99c00bd78bc4ea5eeb8abae5",
+  "after_sha256": "29f8b7b42aaafd6b66c71a2afa6ced9939b0dac7d69f52b825acb1f8e87bbbd5",
+  "existing_module": "fuse.ko",
+  "data_preserved": true
+}

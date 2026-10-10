@@ -1,0 +1,56 @@
+diff --git a/legacy/qcwcn/wifi_hal/common.h b/legacy/qcwcn/wifi_hal/common.h
+index 5ccd801..ad248ae 100644
+--- a/legacy/qcwcn/wifi_hal/common.h
++++ b/legacy/qcwcn/wifi_hal/common.h
+@@ -139,6 +139,8 @@ typedef struct hal_info_s {
+     int num_interfaces;                             // number of interfaces
+ 
+     feature_set supported_feature_set;
++    bool feature_query_unsupported;
++    bool logger_query_unsupported;
+     /* driver supported features defined by enum qca_wlan_vendor_features that
+        can be queried by vendor command QCA_NL80211_VENDOR_SUBCMD_GET_FEATURES */
+     features_info driver_supported_features;
+diff --git a/legacy/qcwcn/wifi_hal/wifi_hal.cpp b/legacy/qcwcn/wifi_hal/wifi_hal.cpp
+index 557c45f..2f1f547 100644
+--- a/legacy/qcwcn/wifi_hal/wifi_hal.cpp
++++ b/legacy/qcwcn/wifi_hal/wifi_hal.cpp
+@@ -2414,7 +2414,13 @@ wifi_error wifi_get_supported_feature_set(wifi_interface_handle iface,
+     *set = 0;
+     hal_info *info = getHalInfo(handle);
+ 
++    if (info->feature_query_unsupported) {
++        *set = info->supported_feature_set;
++        return WIFI_SUCCESS;
++    }
+     ret = acquire_supported_features(iface, set);
++    if (ret == WIFI_ERROR_NOT_SUPPORTED)
++        info->feature_query_unsupported = true;
+     if (ret != WIFI_SUCCESS) {
+         *set = info->supported_feature_set;
+         ALOGV("Supported feature set acquired at initialization : 0x%" PRIx64, *set);
+diff --git a/legacy/qcwcn/wifi_hal/wifilogger.cpp b/legacy/qcwcn/wifi_hal/wifilogger.cpp
+index 018d76e..e587845 100644
+--- a/legacy/qcwcn/wifi_hal/wifilogger.cpp
++++ b/legacy/qcwcn/wifi_hal/wifilogger.cpp
+@@ -227,6 +227,11 @@ wifi_error wifi_get_logger_supported_feature_set(wifi_interface_handle iface,
+     struct nlattr *nlData;
+     interface_info *ifaceInfo = getIfaceInfo(iface);
+     wifi_handle wifiHandle = getWifiHandle(iface);
++    hal_info *info = getHalInfo(wifiHandle);
++    if (info->logger_query_unsupported) {
++        *support = 0;
++        return WIFI_ERROR_NOT_SUPPORTED;
++    }
+ 
+     /* No request id from caller, so generate one and pass it on to the driver.
+      * Generate one randomly.
+@@ -269,6 +274,8 @@ wifi_error wifi_get_logger_supported_feature_set(wifi_interface_handle iface,
+ 
+     /* Send the msg and wait for a response. */
+     ret = wifiLoggerCommand->requestResponse();
++    if (ret == WIFI_ERROR_NOT_SUPPORTED)
++        info->logger_query_unsupported = true;
+     if (ret != WIFI_SUCCESS)
+         ALOGE("%s: Error %d happened. ", __FUNCTION__, ret);
+ 

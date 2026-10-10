@@ -12,7 +12,7 @@ if [ ! -d "$out" ]; then
 fi
 "$src/scripts/config" --file "$out/.config" --enable CPUSETS_V1 --enable PROC_PID_CPUSET
 make -C "$src" O="$out" ARCH=arm64 LLVM=1 olddefconfig
-make -C "$src" O="$out" ARCH=arm64 LLVM=1 -j8 Image.gz modules
+make -C "$src" O="$out" ARCH=arm64 LLVM=1 KALLSYMS_EXTRA_PASS=1 -j8 Image.gz modules
 external=/home/debian/osprey-port/osprey-camera-id-a16-build
 mkdir -p "$external"
 cp /home/debian/osprey-port/osprey-camera-id-build/Makefile /home/debian/osprey-port/osprey-camera-id-build/osprey-camera-id.c "$external/"
