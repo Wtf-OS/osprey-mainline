@@ -1,0 +1,43 @@
+From 8d8a01bf4542d04dbd188416a2735d455e6547e1 Mon Sep 17 00:00:00 2001
+From: MrBoombastic <contact@amroz.xyz>
+Date: Sun, 11 Oct 2026 00:45:18 +0200
+Subject: [PATCH] build: allow a bounded Soong heap on low-memory hosts
+
+Change-Id: I858b5bf5d64f5a04e9d6f621cc57c5de5c3fa4e9
+---
+ cmd/soong_build/main.go | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/cmd/soong_build/main.go b/cmd/soong_build/main.go
+index 335d3d8..1cc8f52 100644
+--- a/cmd/soong_build/main.go
++++ b/cmd/soong_build/main.go
+@@ -22,6 +22,8 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
++	"runtime/debug"
++	"strconv"
+ 	"strings"
+ 	"time"
+ 
+@@ -336,6 +338,16 @@ func main() {
+ 
+ 	configuration, err := android.NewConfig(cmdlineArgs, availableEnv)
+ 	maybeQuit(err, "")
++	// Bound the Go heap on memory-constrained build hosts, including WSL.
++	if value := configuration.Getenv("SOONG_BUILD_MEMORY_LIMIT_BYTES"); value != "" {
++		limit, err := strconv.ParseInt(value, 10, 64)
++		maybeQuit(err, "invalid SOONG_BUILD_MEMORY_LIMIT_BYTES")
++		if limit <= 0 {
++			fmt.Fprintln(os.Stderr, "SOONG_BUILD_MEMORY_LIMIT_BYTES must be positive")
++			os.Exit(1)
++		}
++		debug.SetMemoryLimit(limit)
++	}
+ 	if configuration.Getenv("ALLOW_MISSING_DEPENDENCIES") == "true" {
+ 		configuration.SetAllowMissingDependencies()
+ 	}
+-- 
+2.47.3
+

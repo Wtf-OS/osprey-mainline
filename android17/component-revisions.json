@@ -1,0 +1,122 @@
+[
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
+    "project": "device/motorola/osprey",
+    "repository": "Wtf-OS/android_device_motorola_osprey",
+    "commit": "bf3dc526a726de81e1f709dbc607b347405d597e",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
+    "project": "device/motorola/msm8916-common",
+    "repository": "Wtf-OS/android_device_motorola_msm8916-common",
+    "commit": "3cac3a90b616173dcb44a31e4942587ec1260f35",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/drm_hwcomposer",
+    "project": "external/drm_hwcomposer",
+    "repository": "Wtf-OS/android_external_drm_hwcomposer",
+    "commit": "245577e8a92696ea2a7bec5ff9435eda0b5f4eff",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/mesa3d",
+    "project": "external/mesa3d",
+    "repository": "Wtf-OS/android_external_mesa3d",
+    "commit": "943540b238844f87d5fe7c8e623226f4d970c4c1",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/minigbm",
+    "project": "external/minigbm",
+    "repository": "Wtf-OS/android_external_minigbm",
+    "commit": "7d9c5ce4cbdf4d2aa421987903fe2ffdde5f1aeb",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/external/wpa_supplicant_8",
+    "project": "external/wpa_supplicant_8",
+    "repository": "Wtf-OS/android_external_wpa_supplicant_8",
+    "commit": "8684fe7b5379bb6eac92a5b896b812814c32ce7a",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/base",
+    "project": "frameworks/base",
+    "repository": "Wtf-OS/android_frameworks_base",
+    "commit": "ff187e15cd652f05f74805e2bca9ef7d0ac933b6",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/native",
+    "project": "frameworks/native",
+    "repository": "Wtf-OS/android_frameworks_native",
+    "commit": "e8c20fb095048b55ef0d84ff28deb2652411b441",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/opt/net/wifi",
+    "project": "frameworks/opt/net/wifi",
+    "repository": "Wtf-OS/android_frameworks_opt_net_wifi",
+    "commit": "3c0f35911ce8ab1a53da58ee90b3055195e864f1",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/hardware/qcom/wlan",
+    "project": "hardware/qcom/wlan",
+    "repository": "Wtf-OS/android_hardware_qcom_wlan",
+    "commit": "a59aa5287a544bcd1cc66fccfab49855d93f0958",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/hardware/interfaces",
+    "project": "hardware/interfaces",
+    "repository": "Wtf-OS/android_hardware_interfaces",
+    "commit": "d6d50f43ee381216d44766d1cdd4f6b9eb072258",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/packages/modules/Connectivity",
+    "project": "packages/modules/Connectivity",
+    "repository": "Wtf-OS/android_packages_modules_Connectivity",
+    "commit": "42dba0e20510bfb62303f6f75ba4ad6213f1d130",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/memory/lmkd",
+    "project": "system/memory/lmkd",
+    "repository": "Wtf-OS/android_system_memory_lmkd",
+    "commit": "64d1be691b84c4fa08ed9764772792a9188da33f",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/linux-mainline-osprey",
+    "project": "kernel/mainline",
+    "repository": "Wtf-OS/android_kernel_motorola_msm8916_mainline",
+    "commit": "2e24842f95a06d15947cd76f48945a031644e717",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/libcamera-osprey",
+    "project": "external/libcamera",
+    "repository": "Wtf-OS/libcamera-osprey",
+    "commit": "079314143681bee300adc8567628a3ff5c0ed4d1",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  }
+]

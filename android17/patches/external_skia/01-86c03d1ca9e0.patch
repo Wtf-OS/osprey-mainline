@@ -1,0 +1,27 @@
+From 86c03d1ca9e02ac3fd60589455cab8a2abbb1ebd Mon Sep 17 00:00:00 2001
+From: MrBoombastic <contact@amroz.xyz>
+Date: Fri, 9 Oct 2026 14:31:54 +0200
+Subject: [PATCH] fix(build): expose libskia_skcms for vendor JPEG XL
+ dependencies
+
+Change-Id: I241957ba4d3bc69a39be7905acf0d2aa640c10e7
+(cherry picked from commit 6960f76bb3d577e8e76466c22a0f4906a7b5611f)
+---
+ Android.bp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Android.bp b/Android.bp
+index ff23e964..026bb79e 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -1158,6 +1158,7 @@ gensrcs {
+ cc_library_static {
+     name: "libskia_skcms",
+     host_supported: true,
++    vendor_available: true,
+     sdk_version: "current",
+     srcs: [
+         "modules/skcms/skcms.cc",
+-- 
+2.47.3
+

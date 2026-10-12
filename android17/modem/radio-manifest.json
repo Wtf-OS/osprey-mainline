@@ -1,0 +1,14 @@
+{
+  "system/vendor/bin/hw/android.hardware.radio-service.osprey": "5fdf730e2f6558587007a9e9a956daef4df59132ccd2618c36bdba35c2d34ec0",
+  "system/vendor/etc/init/osprey-radio.rc": "9d00cf4c942ff8b53fc659fc4a853b8c9d5aa37db08afcc04acca5b2025dafed",
+  "system/vendor/etc/vintf/manifest/osprey-radio.xml": "9ed4f6c5ded6f4dc6884d2b9ab6a8d681cf728a42a681d2b36543bc4a0f8708d",
+  "system/vendor/etc/permissions/android.hardware.telephony.radio.access.xml": "6aed339038eb43fafd263812bdcb18dd99dddb48daf8f9277dfe4682e680df7e",
+  "system/vendor/lib/android.hardware.radio-V4-ndk.so": "24b291f7d7bb5fa29905813f833fcedd626c212813c9f04f9630c0a2f3cd9622",
+  "system/vendor/lib/android.hardware.radio.config-V4-ndk.so": "29b907790d83d97f779f713a94caf442e493172f6afd2f828c4cebf4119ceb7d",
+  "system/vendor/lib/android.hardware.radio.modem-V4-ndk.so": "94db87e5e41bbc62fd284f0caf1e26e84bd662c8c83329d560ae9336531fae78",
+  "system/vendor/lib/android.hardware.radio.sim-V4-ndk.so": "9c94361a34fb646a1f7e944bf52e4414d6c083deb86f0c3f59a062b45d3173e6",
+  "system/vendor/lib/android.hardware.radio.network-V4-ndk.so": "183759973dadc7d9481bfabf77078c7266c3b9a4a2228e4cba12f1ecbf7d1f40",
+  "system/vendor/lib/android.hardware.radio.data-V4-ndk.so": "b426ab0c43f11297ac70ea64968eace3c2abd486673d53c1fa1d5f30daf91331",
+  "system/vendor/lib/android.hardware.radio.messaging-V4-ndk.so": "649deb5a227fae6893481f2af0771a96b75ea65312f563ef77b32e7a63007251",
+  "system/vendor/lib/android.hardware.radio.voice-V4-ndk.so": "c2bb48e1bbada99dba577eeeb0c3e180027b415e43d9ef970a635731178b2aae"
+}

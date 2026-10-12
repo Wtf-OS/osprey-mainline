@@ -1,0 +1,53 @@
+{
+  "frameworks/native": [
+    "87246eae1a618eb4e707c30e2dad5bb3eb4c8acb"
+  ],
+  "frameworks/av": [],
+  "system/core": [
+    "9989ae08eb11043189fc058bc3e03bea3b3f595e"
+  ],
+  "system/libhidl": [
+    "743b14200e8fc633948f3b93592d8fd9a9cbc852"
+  ],
+  "system/memory/lmkd": [
+    "c987110565ed4b370c17a91c6fb8b95a845dab18"
+  ],
+  "external/mesa3d": [
+    "da650698401b5f308bcbf0f2d9761d4483a5359f"
+  ],
+  "external/minigbm": [
+    "816d41d7d149fed2d661fdfd3326b5bced9ce345",
+    "aaaad922768afcf1c96eac4f514ff2c12fef8c5b"
+  ],
+  "external/drm_hwcomposer": [
+    "27226af23d0a8c122ab11a899e37362c33a12ed9",
+    "21b7685a27a54050263c66cf67bbe240e3eae1f5"
+  ],
+  "frameworks/opt/net/wifi": [
+    "3a5e4a12b423cbfd4a83d1cb78b7fc67bb288fb8"
+  ],
+  "external/swiftshader": [
+    "91b09a516172fa7016653e82ef3afebf18b360d4"
+  ],
+  "external/google-highway": [
+    "2443906d1bf2ae0abc9a1a78475588d2653873bb"
+  ],
+  "external/skia": [
+    "6960f76bb3d577e8e76466c22a0f4906a7b5611f"
+  ],
+  "external/XMP-Toolkit-SDK": [
+    "18df40b8f34d4944d2142afcb1b5b517c627fc9f"
+  ],
+  "frameworks/base": [
+    "58e466f3f4a8474a790a2c9336c11d22dd6f7d7d"
+  ],
+  "external/wpa_supplicant_8": [
+    "be2de7b4ffd85e88f01abf81d126fd03108bb283"
+  ],
+  "hardware/qcom/wlan": [
+    "ef367d6c1fc446d4dc74076329bc8124ffc74845"
+  ],
+  "packages/modules/Connectivity": [
+    "85731d2b51b23eb04cd5a46a0e2069865ce391fb"
+  ]
+}

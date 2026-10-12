@@ -1,0 +1,21 @@
+/dts-v1/;
+/plugin/;
+/ {
+    fragment@0 {
+        target-path = "/soc@0/i2c@78ba000";
+        __overlay__ {
+            status = "okay";
+            #address-cells = <1>;
+            #size-cells = <0>;
+            magnetometer@c {
+                compatible = "asahi-kasei,ak09912";
+                reg = <0x0c>;
+                reset-gpios = <0x49 90 1>;
+                interrupts-extended = <0x49 50 1>;
+                vdd-supply = <0x5d>;
+                vid-supply = <0x50>;
+                mount-matrix = "-1", "0", "0", "0", "1", "0", "0", "0", "-1";
+            };
+        };
+    };
+};

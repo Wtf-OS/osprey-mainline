@@ -1,0 +1,114 @@
+[
+  {
+    "path": "frameworks/native",
+    "source": "87246eae1a618eb4e707c30e2dad5bb3eb4c8acb",
+    "status": "applied",
+    "head": "e8c20fb095048b55ef0d84ff28deb2652411b441"
+  },
+  {
+    "path": "system/core",
+    "source": "9989ae08eb11043189fc058bc3e03bea3b3f595e",
+    "status": "upstream-replaced",
+    "head": "7c3f32fe89c52b4176fd288ba5bb4f907809c202",
+    "reason": "A17 uses POSIX memfd via sys.use_memfd; old Android ioctl probe was removed."
+  },
+  {
+    "path": "system/libhidl",
+    "source": "743b14200e8fc633948f3b93592d8fd9a9cbc852",
+    "status": "already-upstream",
+    "head": "061055fc4dad78e5d25a77d9217001794656f16b",
+    "reason": "Fixed lookup delay is absent in upstream A17."
+  },
+  {
+    "path": "system/memory/lmkd",
+    "source": "c987110565ed4b370c17a91c6fb8b95a845dab18",
+    "status": "adapted",
+    "head": "64d1be691b84c4fa08ed9764772792a9188da33f",
+    "reason": "Retain A17 pidfd/PSI code; use fixed epoll array capacity and existing use_psi opt-out."
+  },
+  {
+    "path": "external/mesa3d",
+    "source": "da650698401b5f308bcbf0f2d9761d4483a5359f",
+    "status": "applied",
+    "head": "943540b238844f87d5fe7c8e623226f4d970c4c1"
+  },
+  {
+    "path": "external/minigbm",
+    "source": "816d41d7d149fed2d661fdfd3326b5bced9ce345",
+    "status": "adapted",
+    "head": "6bea3c1169e838ac1b67f09db8b5bc2fe4b5cc53",
+    "reason": "Keep A17 drv_create signature and upstream buffer ownership guard."
+  },
+  {
+    "path": "external/minigbm",
+    "source": "aaaad922768afcf1c96eac4f514ff2c12fef8c5b",
+    "status": "applied",
+    "head": "7d9c5ce4cbdf4d2aa421987903fe2ffdde5f1aeb"
+  },
+  {
+    "path": "external/drm_hwcomposer",
+    "source": "27226af23d0a8c122ab11a899e37362c33a12ed9",
+    "status": "applied",
+    "head": "c7a315a2463e08fff29c31505569a298851bd5a4"
+  },
+  {
+    "path": "external/drm_hwcomposer",
+    "source": "21b7685a27a54050263c66cf67bbe240e3eae1f5",
+    "status": "applied",
+    "head": "245577e8a92696ea2a7bec5ff9435eda0b5f4eff"
+  },
+  {
+    "path": "frameworks/opt/net/wifi",
+    "source": "3a5e4a12b423cbfd4a83d1cb78b7fc67bb288fb8",
+    "status": "applied",
+    "head": "3c0f35911ce8ab1a53da58ee90b3055195e864f1"
+  },
+  {
+    "path": "external/swiftshader",
+    "source": "91b09a516172fa7016653e82ef3afebf18b360d4",
+    "status": "applied",
+    "head": "b5ed51e4ee9b2acc6747d363a492cd547b0b59c6"
+  },
+  {
+    "path": "external/google-highway",
+    "source": "2443906d1bf2ae0abc9a1a78475588d2653873bb",
+    "status": "applied",
+    "head": "b24ba1e591c845130b6dff58dfce23413724235a"
+  },
+  {
+    "path": "external/skia",
+    "source": "6960f76bb3d577e8e76466c22a0f4906a7b5611f",
+    "status": "applied",
+    "head": "86c03d1ca9e02ac3fd60589455cab8a2abbb1ebd"
+  },
+  {
+    "path": "external/XMP-Toolkit-SDK",
+    "source": "18df40b8f34d4944d2142afcb1b5b517c627fc9f",
+    "status": "applied",
+    "head": "34aba886a68c5f90d2614ca557bf5b38e429b52a"
+  },
+  {
+    "path": "frameworks/base",
+    "source": "58e466f3f4a8474a790a2c9336c11d22dd6f7d7d",
+    "status": "applied",
+    "head": "ff187e15cd652f05f74805e2bca9ef7d0ac933b6"
+  },
+  {
+    "path": "external/wpa_supplicant_8",
+    "source": "be2de7b4ffd85e88f01abf81d126fd03108bb283",
+    "status": "applied",
+    "head": "8684fe7b5379bb6eac92a5b896b812814c32ce7a"
+  },
+  {
+    "path": "hardware/qcom/wlan",
+    "source": "ef367d6c1fc446d4dc74076329bc8124ffc74845",
+    "status": "applied",
+    "head": "a59aa5287a544bcd1cc66fccfab49855d93f0958"
+  },
+  {
+    "path": "packages/modules/Connectivity",
+    "source": "85731d2b51b23eb04cd5a46a0e2069865ce391fb",
+    "status": "applied",
+    "head": "20fcf90b27117f2e8e6c91c74450da22b83108bf"
+  }
+]

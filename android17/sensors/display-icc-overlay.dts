@@ -1,0 +1,19 @@
+/dts-v1/;
+/plugin/;
+/ {
+    fragment@0 {
+        target-path = "/soc@0/interconnect@400000";
+        bimc_icc: __overlay__ { #interconnect-cells = <1>; };
+    };
+    fragment@1 {
+        target-path = "/soc@0/interconnect@580000";
+        snoc_icc: __overlay__ { #interconnect-cells = <1>; };
+    };
+    fragment@2 {
+        target-path = "/soc@0/display-subsystem@1a00000/display-controller@1a01000";
+        __overlay__ {
+            interconnects = <&snoc_icc 2 &bimc_icc 6>;
+            interconnect-names = "mdp0-mem";
+        };
+    };
+};

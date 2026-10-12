@@ -1,0 +1,47 @@
+[
+  {
+    "path": "build/soong",
+    "base_commit": "5ea236479501d50a4a0eafb568f4f35d1bdda3cb",
+    "commit": "8d8a01bf4542d04dbd188416a2735d455e6547e1",
+    "patches": [
+      "patches/build_soong/01-8d8a01bf4542.patch"
+    ],
+    "publication": "patches-only"
+  },
+  {
+    "path": "external/XMP-Toolkit-SDK",
+    "base_commit": "2acaab2a5a84524b5c6355940e3e104e8b28d6b8",
+    "commit": "34aba886a68c5f90d2614ca557bf5b38e429b52a",
+    "patches": [
+      "patches/external_XMP-Toolkit-SDK/01-34aba886a68c.patch"
+    ],
+    "publication": "patches-only"
+  },
+  {
+    "path": "external/google-highway",
+    "base_commit": "d527070fb97e0aad32637c242fe8f199a498b17d",
+    "commit": "b24ba1e591c845130b6dff58dfce23413724235a",
+    "patches": [
+      "patches/external_google-highway/01-b24ba1e591c8.patch"
+    ],
+    "publication": "patches-only"
+  },
+  {
+    "path": "external/skia",
+    "base_commit": "d4cd0c3616100f5bd71049ea5e43502cdd8cee64",
+    "commit": "86c03d1ca9e02ac3fd60589455cab8a2abbb1ebd",
+    "patches": [
+      "patches/external_skia/01-86c03d1ca9e0.patch"
+    ],
+    "publication": "patches-only"
+  },
+  {
+    "path": "external/swiftshader",
+    "base_commit": "8dba863f640ce1053eb7064c4593cc22c941f01c",
+    "commit": "b5ed51e4ee9b2acc6747d363a492cd547b0b59c6",
+    "patches": [
+      "patches/external_swiftshader/01-b5ed51e4ee9b.patch"
+    ],
+    "publication": "patches-only"
+  }
+]
