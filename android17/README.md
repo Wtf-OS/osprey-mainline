@@ -6,13 +6,15 @@ on their existing branches.
 
 ## Published inputs
 
-- `component-revisions.json`: 15 verified Wtf-OS repository commits, including
+- `component-revisions.json`: verified Wtf-OS repository commits, including
   the device trees, graphics, Wi-Fi, BPF integration, kernel and libcamera.
 - `patch-components.json` and `patches/`: Soong, XMP Toolkit, Highway, Skia and
-  SwiftShader changes. No repositories were created for these dependencies.
-- `pinned-manifest.xml`: exact Android source revisions. The five patch-only
+  SwiftShader, Camera2 and TimeKeep changes. No repositories were created for
+  these dependencies.
+- `pinned-manifest.xml`: exact Android source revisions. The seven patch-only
   projects are pinned to their upstream base, not to unpublished commits.
-- `kernel.config`: the configuration used for the current module build.
+- `kernel.config` and `kernel-modules.json`: kernel configuration and the exact
+  module selection, including the external backlight driver.
 - `modem/` and `sensors/`: integration/packaging references and hash records.
 
 After syncing the pinned manifest, apply each patch in the listed order:
@@ -21,7 +23,7 @@ After syncing the pinned manifest, apply each patch in the listed order:
 git -C build/soong am /path/to/osprey-mainline/android17/patches/build_soong/*.patch
 ```
 
-Repeat for all five paths from `patch-components.json`. Check the local HEAD
+Repeat for all seven paths from `patch-components.json`. Check the local HEAD
 against the recorded base before applying. The kernel and libcamera are
 separate checkouts at the commits in `component-revisions.json`.
 
@@ -36,17 +38,32 @@ Charging resumed after the checked wake cycles.
 
 Radio exposes modem/baseband and SIM state without an inserted SIM. Calls,
 SMS and mobile data are not validated. RMTFS uses a RAM shadow for EFS writes.
-The port remains experimental and uses permissive SELinux/software KeyMint.
-Camera quality, video and standby power still need further validation.
+SELinux is Enforcing; KeyMint remains software-only. Camera capture, recording
+with microphone/modem, autofocus and zoom have had hardware checks. ARM64 RAW/JPEG
+workers serve the ARM32 camera HAL; the validated Codec2 runtime is isolated under
+`/vendor/lib/venus-codec2`. Camera quality and long-term stability remain experimental.
+
+The external BD65B60 LEDs now turn off with the panel and return without display
+corruption in the completed hardware checks. TimeKeep restores wall time from the
+read-only RTC plus a persisted offset. Active host USB holds autosuspend off while
+the bus is active; unplugging releases the hold. Screen-off connection and unplug/
+reconnect without pressing Power passed. Long-duration battery drain is unmeasured.
 
 ## Build/package limits
 
 This is a source checkpoint, not a ROM download or an unattended flash recipe.
-Packaging scripts retain the development workspace paths and expect external
-boot images, lk2nd, firmware, matched modules and previous package manifests.
-Those images, built modules, private device logs and captures are not included.
+See [BUILDING.md](BUILDING.md) for the incremental build/package entry point.
+Scripts retain the development workspace paths and require the pinned external
+kernel/libcamera sources, lk2nd and firmware. The kernel script generates matched
+boot and modules from the explicit module selection. Built images/modules, private
+device logs and captures are not published.
 The module manifests record the actual installed build, whose release suffix
 predates committing its formerly dirty sources. Rebuild all kernel modules
 with the same configuration/release before creating a new boot/system pair.
 `replay-results.json` records changes already provided or removed by A17.
 The A16 sources and artifacts are not overwritten by this checkpoint.
+
+`package-receipt.json` records the rebuilt development ZIP and its checksums.
+The installer preserves Data and recovery, checks partition sizes and hashes,
+and creates no automatic backups. The separately generated rollback helper only
+works with a valid backup left by an earlier installer; it does not create one.

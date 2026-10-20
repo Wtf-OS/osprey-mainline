@@ -3,7 +3,7 @@
     "path": "/home/debian/osprey-port/lineage/device/motorola/osprey",
     "project": "device/motorola/osprey",
     "repository": "Wtf-OS/android_device_motorola_osprey",
-    "commit": "bf3dc526a726de81e1f709dbc607b347405d597e",
+    "commit": "d463660f9fccee819bc8283344b514bd035ec4ff",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -11,7 +11,7 @@
     "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
     "project": "device/motorola/msm8916-common",
     "repository": "Wtf-OS/android_device_motorola_msm8916-common",
-    "commit": "3cac3a90b616173dcb44a31e4942587ec1260f35",
+    "commit": "fed4d8e1e5593baf4001dcde33a46627be1ce726",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -27,7 +27,7 @@
     "path": "/home/debian/osprey-port/lineage/external/mesa3d",
     "project": "external/mesa3d",
     "repository": "Wtf-OS/android_external_mesa3d",
-    "commit": "943540b238844f87d5fe7c8e623226f4d970c4c1",
+    "commit": "11795e943ec89f1a2abaa7786856794363587478",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -35,7 +35,7 @@
     "path": "/home/debian/osprey-port/lineage/external/minigbm",
     "project": "external/minigbm",
     "repository": "Wtf-OS/android_external_minigbm",
-    "commit": "7d9c5ce4cbdf4d2aa421987903fe2ffdde5f1aeb",
+    "commit": "6db4b2f1ab976514360f402c458f166c024c93c1",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -51,7 +51,7 @@
     "path": "/home/debian/osprey-port/lineage/frameworks/base",
     "project": "frameworks/base",
     "repository": "Wtf-OS/android_frameworks_base",
-    "commit": "ff187e15cd652f05f74805e2bca9ef7d0ac933b6",
+    "commit": "031f8781f45003abda8604ed9820f2c576a7fded",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -59,7 +59,7 @@
     "path": "/home/debian/osprey-port/lineage/frameworks/native",
     "project": "frameworks/native",
     "repository": "Wtf-OS/android_frameworks_native",
-    "commit": "e8c20fb095048b55ef0d84ff28deb2652411b441",
+    "commit": "bf8bedc9418ce037d23bd9fcb1ba28d45eda25b9",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -83,7 +83,7 @@
     "path": "/home/debian/osprey-port/lineage/hardware/interfaces",
     "project": "hardware/interfaces",
     "repository": "Wtf-OS/android_hardware_interfaces",
-    "commit": "d6d50f43ee381216d44766d1cdd4f6b9eb072258",
+    "commit": "810a5c7974c2082e136056483774f1eb4b558d32",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -107,7 +107,7 @@
     "path": "/home/debian/osprey-port/linux-mainline-osprey",
     "project": "kernel/mainline",
     "repository": "Wtf-OS/android_kernel_motorola_msm8916_mainline",
-    "commit": "2e24842f95a06d15947cd76f48945a031644e717",
+    "commit": "231600bbd11aabf9eb1181710f68f064ee34ddf1",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },
@@ -115,7 +115,23 @@
     "path": "/home/debian/osprey-port/libcamera-osprey",
     "project": "external/libcamera",
     "repository": "Wtf-OS/libcamera-osprey",
-    "commit": "079314143681bee300adc8567628a3ff5c0ed4d1",
+    "commit": "e64089783e43808c4a30e903ad82eb440dee9739",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/frameworks/av",
+    "project": "frameworks/av",
+    "repository": "Wtf-OS/android_frameworks_av",
+    "commit": "aeb305dcfc012f06b071b909095f3e48f1f706e8",
+    "verified": true,
+    "branch": "lineage-24.0-mainline"
+  },
+  {
+    "path": "/home/debian/osprey-port/lineage/system/core",
+    "project": "system/core",
+    "repository": "Wtf-OS/android_system_core",
+    "commit": "c2d6043bd6a9a614318c1d9266986957b5fd05dd",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   }

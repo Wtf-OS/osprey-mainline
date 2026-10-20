@@ -1,0 +1,1558 @@
+From 5dd0a749663be8c1d4ea7e9bf5dfc9baff49375c Mon Sep 17 00:00:00 2001
+From: MrBoombastic <contact@amroz.xyz>
+Date: Tue, 20 Oct 2026 16:57:20 +0200
+Subject: [PATCH] fix(camera): stabilize recording, snapshots and autofocus
+
+Change-Id: I60438d1967a0b70f62b12bca6d18c162188329c5
+---
+ Android.bp                                    |   2 +
+ jni/jpegutil.cpp                              |  11 +
+ jni/jpegutil.h                                |  31 +-
+ src/com/android/camera/CaptureModule.java     |  28 +-
+ src/com/android/camera/CaptureModuleUI.java   |   4 +-
+ src/com/android/camera/Storage.java           |  69 ++--
+ src/com/android/camera/VideoModule.java       |  94 +++--
+ .../android/camera/app/CameraController.java  |  20 +-
+ .../captureintent/CaptureIntentModuleUI.java  |   2 +-
+ .../data/CameraFilmstripDataAdapter.java      |  11 +-
+ .../camera/data/FilmstripItemList.java        |   7 +-
+ .../android/camera/one/v2/OneCameraImpl.java  | 335 +++++++++++++++---
+ .../camera/one/v2/SimpleOneCameraFactory.java |  16 +
+ .../AndroidCameraDeviceProxy.java             |   4 +
+ .../camera/session/CaptureSessionImpl.java    |   2 +-
+ src/com/android/camera/ui/PreviewOverlay.java |   1 +
+ src/com/android/camera/util/CameraUtil.java   |  36 +-
+ src/com/android/camera/util/ExifUtil.java     |  34 +-
+ .../android/camera/widget/FilmstripView.java  |  38 ++
+ 19 files changed, 596 insertions(+), 149 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 8487fd4..5e8bbc7 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -55,6 +55,8 @@ android_app {
+     // Guava uses deprecated org.apache.http.legacy classes.
+     libs: ["org.apache.http.legacy.stubs.system"],
+ 
++    use_embedded_native_libs: true,
++    jni_uses_platform_apis: true,
+     jni_libs: [
+         "libjni_tinyplanet",
+         "libjni_jpegutil",
+diff --git a/jni/jpegutil.cpp b/jni/jpegutil.cpp
+index 8029869..0a5d5ba 100644
+--- a/jni/jpegutil.cpp
++++ b/jni/jpegutil.cpp
+@@ -19,6 +19,8 @@
+ #include <vector>
+ #include <cstring>
+ #include <cstdio>
++#include <chrono>
++#include <android/log.h>
+ 
+ #include <setjmp.h>
+ 
+@@ -269,7 +271,10 @@ int jpegutil::Compress(int img_width, int img_height,
+   imgArr[1] = const_cast<JSAMPARRAY>(cbArr);
+   imgArr[2] = const_cast<JSAMPARRAY>(crArr);
+ 
++  const auto encodeStart = std::chrono::steady_clock::now();
++  std::chrono::steady_clock::duration rowTime{};
+   for (int y = 0; y < img_height; y += DCTSIZE * 2) {
++    const auto rowStart = std::chrono::steady_clock::now();
+     std::array<unsigned char*, 16> yData = y_row_generator.LoadAt(y);
+     std::array<unsigned char*, 8> cbData = cb_row_generator.LoadAt(y / 2);
+     std::array<unsigned char*, 8> crData = cr_row_generator.LoadAt(y / 2);
+@@ -282,10 +287,16 @@ int jpegutil::Compress(int img_width, int img_height,
+       crArr[row] = crData[row];
+     }
+ 
++    rowTime += std::chrono::steady_clock::now() - rowStart;
+     jpeg_write_raw_data(&cinfo, imgArr, DCTSIZE * 2);
+   }
+ 
+   jpeg_finish_compress(&cinfo);
++  __android_log_print(ANDROID_LOG_INFO, "CameraJpegTiming",
++      "%dx%d rows=%lld us compress=%lld us", img_width, img_height,
++      static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(rowTime).count()),
++      static_cast<long long>(std::chrono::duration_cast<std::chrono::microseconds>(
++          std::chrono::steady_clock::now() - encodeStart - rowTime).count()));
+ 
+   int numBytesInBuffer = cinfo.dest->next_output_byte - out_buf;
+ 
+diff --git a/jni/jpegutil.h b/jni/jpegutil.h
+index a8066ed..391ba02 100644
+--- a/jni/jpegutil.h
++++ b/jni/jpegutil.h
+@@ -18,6 +18,7 @@
+ #include "math.h"
+ #include <array>
+ #include <cassert>
++#include <cstring>
+ #include <functional>
+ #include <memory>
+ #include <stdlib.h>
+@@ -133,6 +134,7 @@ class RowIterator {
+   // The length of a row, with padding to the next multiple of 64.
+   int padded_row_length_;
+   std::vector<unsigned char> buf_;
++  std::vector<unsigned char> strided_row_;
+ };
+ 
+ /**
+@@ -175,6 +177,7 @@ jpegutil::RowIterator<ROWS>::RowIterator(Plane plane, Transform transform,
+     : plane_(plane), transform_(transform) {
+   padded_row_length_ = row_length;
+   buf_ = std::vector<unsigned char>(row_length * ROWS);
++  strided_row_.resize(row_length * 2);
+ }
+ 
+ template <unsigned int ROWS>
+@@ -195,7 +198,6 @@ const std::array<unsigned char*, ROWS> jpegutil::RowIterator<ROWS>::LoadAt(
+ 
+     int output_width = padded_row_length_;
+     output_width = min(output_width, transform_.output_width());
+-    output_width = min(output_width, plane_.width);
+ 
+     // Each row in the output image will be copied into buf_ by gathering pixels
+     // along an axis-aligned line in the plane.
+@@ -240,20 +242,29 @@ const std::array<unsigned char*, ROWS> jpegutil::RowIterator<ROWS>::LoadAt(
+     }
+ 
+     int outX = 0;
+-    for (int idx = plane_start; idx >= min(plane_start, plane_end) &&
+-                                    idx <= max(plane_start, plane_end);
+-         idx += stride) {
+-      buf_ptrs[i][outX] = plane_.data[idx];
+-      outX++;
++    if (stride == 1) {
++      outX = plane_end - plane_start + 1;
++      std::memcpy(buf_ptrs[i], plane_.data + plane_start, outX);
++    } else if (stride == 2) {
++      outX = (plane_end - plane_start) / 2 + 1;
++      // Gather from cached memory; byte reads from gralloc's WC mapping are slow.
++      std::memcpy(strided_row_.data(), plane_.data + plane_start, (outX - 1) * 2 + 1);
++      for (int x = 0; x < outX; x++) {
++        buf_ptrs[i][x] = strided_row_[2 * x];
++      }
++    } else {
++      for (int idx = plane_start; idx >= min(plane_start, plane_end) &&
++                                      idx <= max(plane_start, plane_end);
++           idx += stride) {
++        buf_ptrs[i][outX++] = plane_.data[idx];
++      }
+     }
+ 
+     // Fill the remaining right-edge of the buffer by extending the last
+     // value.
+     unsigned char right_padding_value = buf_ptrs[i][outX - 1];
+-    // TODO OPTIMIZE Use memset instead.
+-    for (; outX < padded_row_length_; outX++) {
+-      buf_ptrs[i][outX] = right_padding_value;
+-    }
++    std::memset(buf_ptrs[i] + outX, right_padding_value,
++                padded_row_length_ - outX);
+   }
+ 
+   return buf_ptrs;
+diff --git a/src/com/android/camera/CaptureModule.java b/src/com/android/camera/CaptureModule.java
+index 32417f6..f568c1f 100644
+--- a/src/com/android/camera/CaptureModule.java
++++ b/src/com/android/camera/CaptureModule.java
+@@ -33,6 +33,7 @@ import android.view.KeyEvent;
+ import android.view.MotionEvent;
+ import android.view.Surface;
+ import android.view.View;
++import android.widget.Toast;
+ 
+ import com.android.camera.app.AppController;
+ import com.android.camera.app.CameraAppUI;
+@@ -421,8 +422,17 @@ public class CaptureModule extends CameraModule implements
+         }
+         mOneCameraManager.setAvailabilityCallback(this, mCameraHandler);
+         mDisplayRotation = CameraUtil.getDisplayRotation(activity);
+-        mCameraFacing = getFacingFromCameraId(
+-              mSettingsManager.getInteger(mAppController.getModuleScope(), Keys.KEY_CAMERA_ID));
++        final int initialCameraId = mSettingsManager.getInteger(
++                mAppController.getModuleScope(), Keys.KEY_CAMERA_ID);
++        // The provider may still be publishing cameras after a service restart.
++        if (initialCameraId < 0 || initialCameraId >=
++                mAppController.getCameraProvider().getNumberOfCameras()) {
++            Log.w(TAG, "Selected camera is not available: " + initialCameraId);
++            mShowErrorAndFinish = true;
++            mAppController.getFatalErrorHandler().onGenericCameraAccessFailure();
++            return;
++        }
++        mCameraFacing = getFacingFromCameraId(initialCameraId);
+         mShowErrorAndFinish = !updateCameraCharacteristics();
+         if (mShowErrorAndFinish) {
+             return;
+@@ -1064,6 +1074,10 @@ public class CaptureModule extends CameraModule implements
+ 
+     @Override
+     public void onPictureSaved(Uri uri) {
++        if (uri == null) {
++            onPictureTakingFailed();
++            return;
++        }
+         mAppController.notifyNewMedia(uri);
+     }
+ 
+@@ -1074,7 +1088,13 @@ public class CaptureModule extends CameraModule implements
+ 
+     @Override
+     public void onPictureTakingFailed() {
+-        mAppController.getFatalErrorHandler().onMediaStorageFailure();
++        Log.w(TAG, "Photo capture failed");
++        mMainThread.execute(() -> {
++            // Complete the progress overlay so it disappears after the error.
++            mUI.setPictureTakingProgress(100);
++            mAppController.getCameraAppUI().enableModeOptions();
++            Toast.makeText(mContext, R.string.error_media_storage_failure, Toast.LENGTH_SHORT).show();
++        });
+     }
+ 
+     /**
+@@ -1539,7 +1559,7 @@ public class CaptureModule extends CameraModule implements
+                                                   CaptureModule.this);
+                                             // Enable zooming after preview
+                                             // has started.
+-                                            mUI.initializeZoom(mCamera.getMaxZoom());
++                                            mUI.initializeZoom(mCamera.getMaxZoom(), mZoomValue);
+                                             mCamera.setFocusStateListener(CaptureModule.this);
+                                         }
+                                     });
+diff --git a/src/com/android/camera/CaptureModuleUI.java b/src/com/android/camera/CaptureModuleUI.java
+index c9a1c6e..25b9a09 100644
+--- a/src/com/android/camera/CaptureModuleUI.java
++++ b/src/com/android/camera/CaptureModuleUI.java
+@@ -178,9 +178,9 @@ public class CaptureModuleUI implements PreviewStatusListener.PreviewAreaChanged
+      *
+      * @param maxZoom maximum zoom value.
+      */
+-    public void initializeZoom(float maxZoom) {
++    public void initializeZoom(float maxZoom, float zoom) {
+         mMaxZoom = maxZoom;
+-        mPreviewOverlay.setupZoom(mMaxZoom, 0, mZoomChangedListener);
++        mPreviewOverlay.setupZoom(mMaxZoom, zoom, mZoomChangedListener);
+     }
+ 
+     @Override
+diff --git a/src/com/android/camera/Storage.java b/src/com/android/camera/Storage.java
+index 066ac3e..65eceba 100644
+--- a/src/com/android/camera/Storage.java
++++ b/src/com/android/camera/Storage.java
+@@ -130,12 +130,17 @@ public class Storage {
+             Location location, int orientation, ExifInterface exif, byte[] data, int width,
+             int height, String mimeType) throws IOException {
+ 
+-        if (data.length > 0) {
+-            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+-            return addImageToMediaStore(resolver, title, date, location, orientation, data.length,
+-                    bitmap, width, height, mimeType, exif);
++        if (data.length == 0) return null;
++        ContentValues values = getContentValuesForData(title, date, location, mimeType, true);
++        Uri uri = resolver.insert(Media.EXTERNAL_CONTENT_URI, values);
++        if (uri == null) throw new IOException("Could not create image in MediaStore");
++        try {
++            writeJpeg(uri, exif, data, width, height, orientation, resolver);
++            return uri;
++        } catch (IOException | RuntimeException failure) {
++            resolver.delete(uri, null, null);
++            throw failure;
+         }
+-        return null;
+     }
+ 
+     /**
+@@ -180,6 +185,24 @@ public class Storage {
+         return uri;
+     }
+ 
++    private void writeJpeg(Uri uri, ExifInterface exif, byte[] jpeg, int width,
++            int height, int orientation, ContentResolver resolver) throws IOException {
++        // Preserve the encoded image instead of decoding and recompressing it.
++        try (OutputStream os = resolver.openOutputStream(uri, "w")) {
++            if (os == null) throw new IOException("Could not open image output");
++            if (exif != null) exif.writeExif(jpeg, os);
++            else os.write(jpeg);
++        }
++        ContentValues values = new ContentValues();
++        values.put(Media.WIDTH, width);
++        values.put(Media.HEIGHT, height);
++        values.put(Media.ORIENTATION, orientation);
++        values.put(Media.IS_PENDING, 0);
++        if (resolver.update(uri, values, null, null) != 1) {
++            throw new IOException("Could not publish saved image");
++        }
++    }
++
+     private void writeBitmap(Uri uri, ExifInterface exif, Bitmap bitmap, ContentResolver resolver)
+             throws FileNotFoundException, IOException {
+         OutputStream os = resolver.openOutputStream(uri);
+@@ -292,9 +315,18 @@ public class Storage {
+     public Uri updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
+            Location location, int orientation, ExifInterface exif,
+            byte[] jpeg, int width, int height, String mimeType) throws IOException {
+-        Bitmap bitmap = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
+-        return updateImage(imageUri, resolver, title, date, location, orientation, jpeg.length,
+-                bitmap, width, height, mimeType, exif);
++        if (isSessionUri(imageUri)) {
++            Uri resultUri = addImage(resolver, title, date, location, orientation,
++                    exif, jpeg, width, height, mimeType);
++            if (resultUri == null) throw new IOException("Could not save placeholder image");
++            sSessionsToContentUris.put(imageUri, resultUri);
++            sContentUrisToSessions.put(resultUri, imageUri);
++            return resultUri;
++        }
++        writeJpeg(imageUri, exif, jpeg, width, height, orientation, resolver);
++        ContentValues values = getContentValuesForData(title, date, location, mimeType, false);
++        resolver.update(imageUri, values, null, null);
++        return imageUri;
+     }
+ 
+     private Uri generateUniquePlaceholderUri() {
+@@ -354,27 +386,6 @@ public class Storage {
+         return parentFile.mkdirs();
+     }
+ 
+-    /** Updates the image values in MediaStore. */
+-    private Uri updateImage(Uri imageUri, ContentResolver resolver, String title,
+-            long date, Location location, int orientation, int jpegLength,
+-            Bitmap bitmap, int width, int height, String mimeType, ExifInterface exif) {
+-
+-        Uri resultUri = imageUri;
+-        if (isSessionUri(imageUri)) {
+-            // If this is a session uri, then we need to add the image
+-            resultUri = addImageToMediaStore(resolver, title, date, location, orientation,
+-                    jpegLength, bitmap, width, height, mimeType, exif);
+-            sSessionsToContentUris.put(imageUri, resultUri);
+-            sContentUrisToSessions.put(resultUri, imageUri);
+-        } else {
+-            // Update the MediaStore
+-            ContentValues values = getContentValuesForData(title, date, location, mimeType, false);
+-            resolver.update(imageUri, values, null, null);
+-            Log.i(TAG, "Image with uri: " + imageUri + " was updated in the MediaStore");
+-        }
+-        return resultUri;
+-    }
+-
+     private String generateFilepath(String title, String mimeType) {
+         return generateFilepath(DIRECTORY, title, mimeType);
+     }
+diff --git a/src/com/android/camera/VideoModule.java b/src/com/android/camera/VideoModule.java
+index 68c68d6..60a99d7 100644
+--- a/src/com/android/camera/VideoModule.java
++++ b/src/com/android/camera/VideoModule.java
+@@ -126,6 +126,8 @@ public class VideoModule extends CameraModule
+ 
+     private boolean mIsInReviewMode;
+     private boolean mSnapshotInProgress = false;
++    private JpegPictureCallback mVideoSnapshotCallback;
++    private boolean mStopAfterSnapshot;
+ 
+     // Preference must be read before starting preview. We check this before starting
+     // preview.
+@@ -415,10 +417,12 @@ public class VideoModule extends CameraModule
+             mCameraDevice.applySettings(mCameraSettings);
+ 
+             Log.i(TAG, "Video snapshot start");
+-            mCameraDevice.takePicture(mHandler,
+-                    null, null, null, new JpegPictureCallback(loc));
+-            showVideoSnapshotUI(true);
++            mVideoSnapshotCallback = new JpegPictureCallback(loc);
+             mSnapshotInProgress = true;
++            showVideoSnapshotUI(true);
++            mHandler.postDelayed(mVideoSnapshotCallback, 5000);
++            mCameraDevice.takePicture(mHandler,
++                    null, null, null, mVideoSnapshotCallback);
+         }
+     }
+ 
+@@ -685,7 +689,8 @@ public class VideoModule extends CameraModule
+ 
+     @Override
+     public void onShutterButtonClick() {
+-        if (mSwitchingCamera) {
++        if (mSwitchingCamera || (!mMediaRecorderRecording
++                && (mCameraDevice == null || !mPreviewing))) {
+             return;
+         }
+         boolean stop = mMediaRecorderRecording;
+@@ -1007,7 +1012,7 @@ public class VideoModule extends CameraModule
+         mActivity.getCameraProvider().releaseCamera(mCameraDevice.getCameraId());
+         mCameraDevice = null;
+         mPreviewing = false;
+-        mSnapshotInProgress = false;
++        finishVideoSnapshot();
+         if (mFocusManager != null) {
+             mFocusManager.onCameraReleased();
+         }
+@@ -1087,11 +1092,25 @@ public class VideoModule extends CameraModule
+     // Prepares media recorder.
+     private void initializeRecorder() {
+         Log.i(TAG, "initializeRecorder: " + Thread.currentThread());
+-        // If the mCameraDevice is null, then this activity is going to finish
+-        if (mCameraDevice == null) {
++        // Reject a proxy retained across camera close/reopen before unlocking or creating output.
++        if (mCameraDevice == null || mCameraDevice.getCamera() == null) {
+             Log.w(TAG, "null camera proxy, not recording");
+             return;
+         }
++        // Unlock the camera object before passing it to media recorder.
++        mCameraDevice.unlock();
++        // We rely here on the fact that the unlock call above is synchronous
++        // and blocks until it occurs in the handler thread. Thereby ensuring
++        // that we are up to date with handler requests, and if this proxy had
++        // ever been released by a prior command, it would be null.
++        Camera camera = mCameraDevice.getCamera();
++        // If the camera device is null, the camera proxy is stale and recording
++        // should be ignored.
++        if (camera == null) {
++            Log.w(TAG, "null camera within proxy, not recording");
++            return;
++        }
++
+         Intent intent = mActivity.getIntent();
+         Bundle myExtras = intent.getExtras();
+ 
+@@ -1129,20 +1148,6 @@ public class VideoModule extends CameraModule
+         }
+ 
+         mMediaRecorder = new MediaRecorder();
+-        // Unlock the camera object before passing it to media recorder.
+-        mCameraDevice.unlock();
+-        // We rely here on the fact that the unlock call above is synchronous
+-        // and blocks until it occurs in the handler thread. Thereby ensuring
+-        // that we are up to date with handler requests, and if this proxy had
+-        // ever been released by a prior command, it would be null.
+-        Camera camera = mCameraDevice.getCamera();
+-        // If the camera device is null, the camera proxy is stale and recording
+-        // should be ignored.
+-        if (camera == null) {
+-            Log.w(TAG, "null camera within proxy, not recording");
+-            return;
+-        }
+-
+         mMediaRecorder.setCamera(camera);
+         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+@@ -1369,6 +1374,12 @@ public class VideoModule extends CameraModule
+                     initializeRecorder();
+                     if (mMediaRecorder == null) {
+                         Log.e(TAG, "Fail to initialize media recorder");
++                        mUI.setSwipingEnabled(true);
++                        mUI.showPassiveFocusIndicator();
++                        mAppController.getCameraAppUI().enableModeOptions();
++                        mAppController.getCameraAppUI().setShouldSuppressCaptureIndicator(false);
++                        closeCamera();
++                        requestCamera(mCameraId);
+                         return;
+                     }
+ 
+@@ -1456,11 +1467,10 @@ public class VideoModule extends CameraModule
+     }
+ 
+     private boolean stopVideoRecording() {
+-        // Do nothing if camera device is still capturing photo. Monkey test can trigger app crashes
+-        // (b/17313985) without this check. Crash could also be reproduced by continuously tapping
+-        // on shutter button and preview with two fingers.
++        // Defer until callback/timeout to avoid Camera1 stop/capture races (b/17313985).
+         if (mSnapshotInProgress) {
+-            Log.v(TAG, "Skip stopVideoRecording since snapshot in progress");
++            Log.v(TAG, "Defer stopVideoRecording until snapshot completes");
++            mStopAfterSnapshot = true;
+             return true;
+         }
+         Log.v(TAG, "stopVideoRecording");
+@@ -1764,6 +1774,7 @@ public class VideoModule extends CameraModule
+     @Override
+     public void pause() {
+         mPaused = true;
++        finishVideoSnapshot();
+ 
+         mAppController.getOrientationManager().removeOnOrientationChangeListener(this);
+ 
+@@ -1917,19 +1928,44 @@ public class VideoModule extends CameraModule
+         }
+     }
+ 
+-    private final class JpegPictureCallback implements CameraPictureCallback {
++    private void finishVideoSnapshot() {
++        if (mVideoSnapshotCallback != null) {
++            mHandler.removeCallbacks(mVideoSnapshotCallback);
++            mVideoSnapshotCallback = null;
++        }
++        mSnapshotInProgress = false;
++        showVideoSnapshotUI(false);
++        boolean stopRecording = mStopAfterSnapshot;
++        mStopAfterSnapshot = false;
++        if (stopRecording && mMediaRecorderRecording) {
++            onStopVideoRecording();
++        }
++    }
++
++    private final class JpegPictureCallback implements CameraPictureCallback, Runnable {
+         Location mLocation;
+ 
+         public JpegPictureCallback(Location loc) {
+             mLocation = loc;
+         }
+ 
++        @Override
++        public void run() {
++            if (mVideoSnapshotCallback == this) {
++                Log.w(TAG, "Video snapshot timed out; restoring recording controls");
++                finishVideoSnapshot();
++            }
++        }
++
+         @Override
+         public void onPictureTaken(byte [] jpegData, CameraProxy camera) {
+             Log.i(TAG, "Video snapshot taken.");
+-            mSnapshotInProgress = false;
+-            showVideoSnapshotUI(false);
+-            storeImage(jpegData, mLocation);
++            if (mVideoSnapshotCallback == this) {
++                finishVideoSnapshot();
++            }
++            if (jpegData != null && jpegData.length != 0) {
++                storeImage(jpegData, mLocation);
++            }
+         }
+     }
+ 
+diff --git a/src/com/android/camera/app/CameraController.java b/src/com/android/camera/app/CameraController.java
+index 7921335..1ab2593 100644
+--- a/src/com/android/camera/app/CameraController.java
++++ b/src/com/android/camera/app/CameraController.java
+@@ -106,7 +106,7 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+ 
+     @Override
+     public CameraDeviceInfo.Characteristics getCharacteristics(int cameraId) {
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return null;
+         }
+         return mInfo.getCharacteristics(cameraId);
+@@ -120,15 +120,17 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+ 
+     @Override
+     public int getNumberOfCameras() {
+-        if (mInfo == null) {
+-            return 0;
++        // An empty enumeration during service startup must not remain cached.
++        if (mInfo == null || mInfo.getNumberOfCameras() == 0) {
++            CameraAgent agent = mUsingNewApi ? mCameraAgentNg : mCameraAgent;
++            mInfo = agent.getCameraDeviceInfo();
+         }
+-        return mInfo.getNumberOfCameras();
++        return mInfo == null ? 0 : mInfo.getNumberOfCameras();
+     }
+ 
+     @Override
+     public int getFirstBackCameraId() {
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return -1;
+         }
+         return mInfo.getFirstBackCameraId();
+@@ -136,7 +138,7 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+ 
+     @Override
+     public int getFirstFrontCameraId() {
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return -1;
+         }
+         return mInfo.getFirstFrontCameraId();
+@@ -144,7 +146,7 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+ 
+     @Override
+     public boolean isFrontFacingCamera(int id) {
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return false;
+         }
+         if (id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
+@@ -156,7 +158,7 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+ 
+     @Override
+     public boolean isBackFacingCamera(int id) {
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return false;
+         }
+         if (id >= mInfo.getNumberOfCameras() || mInfo.getCharacteristics(id) == null) {
+@@ -226,7 +228,7 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
+         if (mRequestingCameraId != EMPTY_REQUEST || mRequestingCameraId == id) {
+             return;
+         }
+-        if (mInfo == null) {
++        if (getNumberOfCameras() == 0) {
+             return;
+         }
+         mRequestingCameraId = id;
+diff --git a/src/com/android/camera/captureintent/CaptureIntentModuleUI.java b/src/com/android/camera/captureintent/CaptureIntentModuleUI.java
+index 7402181..765db0f 100644
+--- a/src/com/android/camera/captureintent/CaptureIntentModuleUI.java
++++ b/src/com/android/camera/captureintent/CaptureIntentModuleUI.java
+@@ -191,7 +191,7 @@ public class CaptureIntentModuleUI {
+      */
+     public void initializeZoom(float maxZoom) {
+         MainThread.checkMainThread();
+-        mPreviewOverlay.setupZoom(maxZoom, 0, mZoomChancedListener);
++        mPreviewOverlay.setupZoom(maxZoom, 1f, mZoomChancedListener);
+     }
+ 
+     public FocusRing getFocusRing() {
+diff --git a/src/com/android/camera/data/CameraFilmstripDataAdapter.java b/src/com/android/camera/data/CameraFilmstripDataAdapter.java
+index c26c4e0..7e0b955 100644
+--- a/src/com/android/camera/data/CameraFilmstripDataAdapter.java
++++ b/src/com/android/camera/data/CameraFilmstripDataAdapter.java
+@@ -240,16 +240,17 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
+     }
+ 
+     @Override
+-    public void updateItemAt(final int pos, FilmstripItem item) {
++    public void updateItemAt(int pos, FilmstripItem item) {
+         final Uri uri = item.getData().getUri();
+         int oldPos = findByContentUri(uri);
+         mFilmstripItems.set(pos, item);
+-        updateMetadataAt(pos, true /* forceItemUpdate */);
+-
+         if ((oldPos != -1) && (oldPos != pos)) {
+-            Log.v(TAG, "found duplicate data: " + uri);
+-            removeAt(oldPos);
++            // Removing a duplicate view must not delete its shared photo file.
++            FilmstripItem duplicate = mFilmstripItems.remove(oldPos);
++            if (mListener != null) mListener.onFilmstripItemRemoved(oldPos, duplicate);
++            if (oldPos < pos) pos--;
+         }
++        updateMetadataAt(pos, true /* forceItemUpdate */);
+     }
+ 
+     private void insertItem(FilmstripItem item) {
+diff --git a/src/com/android/camera/data/FilmstripItemList.java b/src/com/android/camera/data/FilmstripItemList.java
+index a2979e5..378617e 100644
+--- a/src/com/android/camera/data/FilmstripItemList.java
++++ b/src/com/android/camera/data/FilmstripItemList.java
+@@ -69,7 +69,8 @@ public class FilmstripItemList {
+     public synchronized FilmstripItem remove(int index) {
+         try {
+             FilmstripItem removedItem = mList.remove(index);
+-            mUriMap.remove(removedItem);
++            Uri uri = removedItem.getData().getUri();
++            if (mUriMap.get(uri) == removedItem) mUriMap.remove(uri);
+             return removedItem;
+         } catch (IndexOutOfBoundsException ex) {
+             Log.w(TAG, "Could not remove item. Not found: " + index, ex);
+@@ -82,7 +83,9 @@ public class FilmstripItemList {
+     }
+ 
+     public void set(int pos, FilmstripItem data) {
+-        mList.set(pos, data);
++        FilmstripItem previous = mList.set(pos, data);
++        Uri previousUri = previous.getData().getUri();
++        if (mUriMap.get(previousUri) == previous) mUriMap.remove(previousUri);
+         mUriMap.put(data.getData().getUri(), data);
+     }
+ 
+diff --git a/src/com/android/camera/one/v2/OneCameraImpl.java b/src/com/android/camera/one/v2/OneCameraImpl.java
+index d9c6b03..365bc02 100644
+--- a/src/com/android/camera/one/v2/OneCameraImpl.java
++++ b/src/com/android/camera/one/v2/OneCameraImpl.java
+@@ -37,6 +37,7 @@ import android.media.Image;
+ import android.media.ImageReader;
+ import android.net.Uri;
+ import android.os.Build;
++import android.os.AsyncTask;
+ import android.os.Handler;
+ import android.os.HandlerThread;
+ import android.os.SystemClock;
+@@ -91,13 +92,15 @@ public class OneCameraImpl extends AbstractOneCamera {
+     private static class InFlightCapture {
+         final PhotoCaptureParameters parameters;
+         final CaptureSession session;
++        final CaptureRequest request;
+         Image image;
+         TotalCaptureResult totalCaptureResult;
+ 
+         public InFlightCapture(PhotoCaptureParameters parameters,
+-                CaptureSession session) {
++                CaptureSession session, CaptureRequest request) {
+             this.parameters = parameters;
+             this.session = session;
++            this.request = request;
+         }
+ 
+         /** Set the image once it's been received. */
+@@ -132,8 +135,8 @@ public class OneCameraImpl extends AbstractOneCamera {
+     private static final Byte JPEG_QUALITY = 90;
+ 
+     /**
+-     * Set to ImageFormat.JPEG, to use the hardware encoder, or
+-     * ImageFormat.YUV_420_888 to use the software encoder. You can also try
++     * Set to ImageFormat.JPEG to use the HAL encoder, or
++     * ImageFormat.YUV_420_888 to encode in this application. You can also try
+      * RAW_SENSOR experimentally.
+      */
+     private static final int sCaptureImageFormat = DebugPropertyHelper.isCaptureDngEnabled() ?
+@@ -165,7 +168,12 @@ public class OneCameraImpl extends AbstractOneCamera {
+     private final File mRawDirectory;
+ 
+     /** Current CONTROL_AF_MODE request to Camera2 API. */
+-    private int mControlAFMode = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
++    private final int mDefaultAFMode;
++    private int mControlAFMode;
++    private boolean mWaitForAfLock;
++    private CaptureRequest mAfCaptureRequest;
++    private long mAfCaptureFrameNumber = Long.MAX_VALUE;
++    private Runnable mAfCaptureTimeout;
+     /** Last OneCamera.AutoFocusState reported. */
+     private AutoFocusState mLastResultAFState = AutoFocusState.INACTIVE;
+     /** Flag to take a picture when the lens is stopped. */
+@@ -182,8 +190,12 @@ public class OneCameraImpl extends AbstractOneCamera {
+         public void run() {
+             mAFRegions = ZERO_WEIGHT_3A_REGION;
+             mAERegions = ZERO_WEIGHT_3A_REGION;
+-            mControlAFMode = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+-            repeatingPreview(null);
++            if (mIsClosed) return;
++            mControlAFMode = mDefaultAFMode;
++            if (!mCaptureBusy && !mStillSession && mCaptureSession != null) {
++                sendAfTrigger(CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
++                repeatingPreview(null);
++            }
+         }
+     };
+ 
+@@ -212,6 +224,19 @@ public class OneCameraImpl extends AbstractOneCamera {
+                     }
+                 }
+ 
++                @Override
++                public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request,
++                        android.hardware.camera2.CaptureFailure failure) {
++                    failCapture(request);
++                }
++
++                @Override
++                public void onCaptureBufferLost(CameraCaptureSession session, CaptureRequest request,
++                        Surface target, long frameNumber) {
++                    if (mIsClosed) return;
++                    if (target == mCaptureImageReader.getSurface()) failCapture(request);
++                }
++
+                 // AF state information is sometimes available 1 frame before
+                 // onCaptureCompleted(), so we take advantage of that.
+                 @Override
+@@ -224,6 +249,8 @@ public class OneCameraImpl extends AbstractOneCamera {
+                 @Override
+                 public void onCaptureCompleted(CameraCaptureSession session,
+                         CaptureRequest request, TotalCaptureResult result) {
++                    if (mIsClosed) return;
++                    if (request == mAfCaptureRequest) mAfCaptureFrameNumber = result.getFrameNumber();
+                     autofocusStateChangeDispatcher(result);
+                     // This checks for a HAL implementation error where
+                     // TotalCaptureResult
+@@ -246,6 +273,8 @@ public class OneCameraImpl extends AbstractOneCamera {
+                         // complete, store the image on disk.
+                         InFlightCapture capture = null;
+                         synchronized (mCaptureQueue) {
++                            if (mCaptureQueue.isEmpty()
++                                    || mCaptureQueue.getFirst().request != request) return;
+                             if (mCaptureQueue.getFirst().setCaptureResult(result)
+                                     .isCaptureComplete()) {
+                                 capture = mCaptureQueue.removeFirst();
+@@ -262,6 +291,20 @@ public class OneCameraImpl extends AbstractOneCamera {
+     private final HandlerThread mCameraThread;
+     /** Handler of the {@link #mCameraThread}. */
+     private final Handler mCameraHandler;
++    private void failCapture(CaptureRequest request) {
++        if (mIsClosed) return;
++        if (request.getTag() != RequestTag.CAPTURE) return;
++        InFlightCapture capture;
++        synchronized (mCaptureQueue) {
++            if (mCaptureQueue.isEmpty() || mCaptureQueue.getFirst().request != request) return;
++            capture = mCaptureQueue.removeFirst();
++        }
++        if (capture.image != null) capture.image.close();
++        capture.session.cancel();
++        capture.parameters.callback.onPictureTakingFailed();
++        restorePreview();
++    }
++
+     /** The characteristics of this camera. */
+     private final CameraCharacteristics mCharacteristics;
+     private final LinearScale mLensRange;
+@@ -276,6 +319,11 @@ public class OneCameraImpl extends AbstractOneCamera {
+     private final float mFullSizeAspectRatio;
+     /** The Camera2 API capture session currently active. */
+     private CameraCaptureSession mCaptureSession;
++    private CaptureReadyCallback mPreviewReadyCallback;
++    private boolean mStillSession;
++    private volatile boolean mCaptureBusy;
++    private final com.android.camera.async.Observable<PhotoCaptureParameters.Flash> mFlashSetting;
++    private final com.android.camera.async.Observable<Integer> mExposureSetting;
+     /** The surface onto which to render the preview. */
+     private Surface mPreviewSurface;
+     /**
+@@ -297,8 +345,15 @@ public class OneCameraImpl extends AbstractOneCamera {
+                     // If all the data for that capture is complete, store the
+                     // image data.
+                     InFlightCapture capture = null;
++                    if (mIsClosed) return;
+                     synchronized (mCaptureQueue) {
+-                        if (mCaptureQueue.getFirst().setImage(reader.acquireLatestImage())
++                        Image image = reader.acquireLatestImage();
++                        if (image == null) return;
++                        if (mCaptureQueue.isEmpty()) {
++                            image.close();
++                            return;
++                        }
++                        if (mCaptureQueue.getFirst().setImage(image)
+                                 .isCaptureComplete()) {
+                             capture = mCaptureQueue.removeFirst();
+                         }
+@@ -316,7 +371,13 @@ public class OneCameraImpl extends AbstractOneCamera {
+      * @param characteristics The device's characteristics.
+      * @param pictureSize the size of the final image to be taken.
+      */
+-    OneCameraImpl(CameraDevice device, CameraCharacteristics characteristics, Size pictureSize) {
++    OneCameraImpl(CameraDevice device, CameraCharacteristics characteristics, Size pictureSize,
++            com.android.camera.async.Observable<PhotoCaptureParameters.Flash> flashSetting,
++            com.android.camera.async.Observable<Integer> exposureSetting) {
++        mFlashSetting = flashSetting;
++        mExposureSetting = exposureSetting;
++        mDefaultAFMode = preferredAfMode(characteristics);
++        mControlAFMode = mDefaultAFMode;
+         mDevice = device;
+         mCharacteristics = characteristics;
+         mLensRange = LensRangeCalculator.getDiopterToRatioCalculator(characteristics);
+@@ -345,16 +406,63 @@ public class OneCameraImpl extends AbstractOneCamera {
+         Log.d(TAG, "New Camera2 based OneCameraImpl created.");
+     }
+ 
++    private static int preferredAfMode(CameraCharacteristics characteristics) {
++        int fallback = CameraMetadata.CONTROL_AF_MODE_OFF;
++        int[] modes = characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
++        if (modes != null) {
++            for (int mode : modes) {
++                if (mode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) return mode;
++                if (mode == CameraMetadata.CONTROL_AF_MODE_AUTO) fallback = mode;
++            }
++        }
++        return fallback;
++    }
++
++    private void cancelAfCaptureWait() {
++        mWaitForAfLock = false;
++        mTakePictureWhenLensIsStopped = false;
++        mAfCaptureRequest = null;
++        mAfCaptureFrameNumber = Long.MAX_VALUE;
++        if (mAfCaptureTimeout != null) mCameraHandler.removeCallbacks(mAfCaptureTimeout);
++        mAfCaptureTimeout = null;
++    }
++
++    private boolean sendAfTrigger(int trigger) {
++        if (mIsClosed || mStillSession || mCaptureSession == null || mPreviewSurface == null) return false;
++        try {
++            CaptureRequest.Builder builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
++            builder.addTarget(mPreviewSurface);
++            addBaselineCaptureKeysToRequest(builder);
++            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, trigger);
++            CaptureRequest request = builder.build();
++            if (mWaitForAfLock && trigger == CameraMetadata.CONTROL_AF_TRIGGER_START) {
++                mAfCaptureRequest = request;
++                mAfCaptureFrameNumber = Long.MAX_VALUE;
++            }
++            mCaptureSession.capture(request, mCaptureCallback, mCameraHandler);
++            return true;
++        } catch (CameraAccessException | IllegalStateException | IllegalArgumentException e) {
++            Log.e(TAG, "Could not send AF trigger", e);
++            return false;
++        }
++    }
++
+     /**
+      * Take picture, initiating an auto focus scan if needed.
+      */
+     @Override
+     public void takePicture(final PhotoCaptureParameters params, final CaptureSession session) {
++        mCameraHandler.post(() -> takePictureOnHandler(params, session));
++    }
++
++    private void takePictureOnHandler(final PhotoCaptureParameters params, final CaptureSession session) {
+         // Do not do anything when a picture is already requested.
+-        if (mTakePictureWhenLensIsStopped) {
++        if (mCaptureBusy || mIsClosed) {
+             return;
+         }
+ 
++        mCameraHandler.removeCallbacks(mReturnToContinuousAFRunnable);
++        mCaptureBusy = true;
+         // Not ready until the picture comes back.
+         broadcastReadyState(false);
+ 
+@@ -367,14 +475,21 @@ public class OneCameraImpl extends AbstractOneCamera {
+         mLastPictureCallback = params.callback;
+         mTakePictureStartMillis = SystemClock.uptimeMillis();
+ 
+-        // This class implements a very simple version of AF, which
+-        // only delays capture if the lens is scanning.
+-        if (mLastResultAFState == AutoFocusState.ACTIVE_SCAN) {
+-            Log.v(TAG, "Waiting until scan is done before taking shot.");
++        if (mControlAFMode != CameraMetadata.CONTROL_AF_MODE_OFF) {
++            mWaitForAfLock = true;
+             mTakePictureWhenLensIsStopped = true;
++            mAfCaptureTimeout = () -> {
++                if (!mWaitForAfLock || mIsClosed) return;
++                restorePreview();
++                params.callback.onPictureTakingFailed();
++            };
++            if (sendAfTrigger(CameraMetadata.CONTROL_AF_TRIGGER_START)) {
++                mCameraHandler.postDelayed(mAfCaptureTimeout, 6000);
++            } else {
++                restorePreview();
++                params.callback.onPictureTakingFailed();
++            }
+         } else {
+-            // We could do CONTROL_AF_TRIGGER_START and wait until lens locks,
+-            // but this would slow down the capture.
+             takePictureNow(params, session);
+         }
+     }
+@@ -382,7 +497,44 @@ public class OneCameraImpl extends AbstractOneCamera {
+     /**
+      * Take picture immediately. Parameters passed through from takePicture().
+      */
+-    public void takePictureNow(PhotoCaptureParameters params, CaptureSession session) {
++    public void takePictureNow(final PhotoCaptureParameters params, final CaptureSession session) {
++        if (mIsClosed) {
++            return;
++        }
++        if (!mStillSession) {
++            mCameraHandler.post(() -> {
++                if (mIsClosed) return;
++                try {
++                    mCaptureSession.stopRepeating();
++                    mDevice.createCaptureSession(java.util.Collections.singletonList(
++                            mCaptureImageReader.getSurface()),
++                            new CameraCaptureSession.StateCallback() {
++                        @Override
++                        public void onConfigured(CameraCaptureSession captureSession) {
++                            if (mIsClosed) {
++                                captureSession.close();
++                                return;
++                            }
++                            mCaptureSession = captureSession;
++                            mStillSession = true;
++                            // Only one full-resolution request fits comfortably in 1 GB RAM.
++                            takePictureNow(params, session);
++                        }
++
++                        @Override
++                        public void onConfigureFailed(CameraCaptureSession captureSession) {
++                            restorePreview();
++                            params.callback.onPictureTakingFailed();
++                        }
++                    }, mCameraHandler);
++                } catch (CameraAccessException | IllegalStateException e) {
++                    Log.e(TAG, "Could not switch to still capture", e);
++                    restorePreview();
++                    params.callback.onPictureTakingFailed();
++                }
++            });
++            return;
++        }
+         long dt = SystemClock.uptimeMillis() - mTakePictureStartMillis;
+         Log.v(TAG, "Taking shot with extra AF delay of " + dt + " ms.");
+         try {
+@@ -391,6 +543,21 @@ public class OneCameraImpl extends AbstractOneCamera {
+                     .createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+             builder.setTag(RequestTag.CAPTURE);
+             addBaselineCaptureKeysToRequest(builder);
++            builder.set(CaptureRequest.NOISE_REDUCTION_MODE,
++                    CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
++            switch (mFlashSetting.get()) {
++                case ON:
++                    builder.set(CaptureRequest.CONTROL_AE_MODE,
++                            CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
++                    break;
++                case AUTO:
++                    builder.set(CaptureRequest.CONTROL_AE_MODE,
++                            CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH);
++                    break;
++                default:
++                    builder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
++                    break;
++            }
+ 
+             // Enable lens-shading correction for even better DNGs.
+             if (sCaptureImageFormat == ImageFormat.RAW_SENSOR) {
+@@ -402,7 +569,6 @@ public class OneCameraImpl extends AbstractOneCamera {
+                         CameraUtil.getJpegRotation(params.orientation, mCharacteristics));
+             }
+ 
+-            builder.addTarget(mPreviewSurface);
+             builder.addTarget(mCaptureImageReader.getSurface());
+             CaptureRequest request = builder.build();
+ 
+@@ -414,21 +580,25 @@ public class OneCameraImpl extends AbstractOneCamera {
+                         "capture.txt"));
+             }
+ 
++            synchronized (mCaptureQueue) {
++                mCaptureQueue.add(new InFlightCapture(params, session, request));
++            }
+             mCaptureSession.capture(request, mCaptureCallback, mCameraHandler);
+-        } catch (CameraAccessException e) {
++        } catch (CameraAccessException | IllegalStateException e) {
++            synchronized (mCaptureQueue) {
++                if (!mCaptureQueue.isEmpty()) mCaptureQueue.removeLast();
++            }
+             Log.e(TAG, "Could not access camera for still image capture.");
+-            broadcastReadyState(true);
++            restorePreview();
+             params.callback.onPictureTakingFailed();
+             return;
+         }
+-        synchronized (mCaptureQueue) {
+-            mCaptureQueue.add(new InFlightCapture(params, session));
+-        }
+     }
+ 
+     @Override
+     public void startPreview(Surface previewSurface, CaptureReadyCallback listener) {
+         mPreviewSurface = previewSurface;
++        mPreviewReadyCallback = listener;
+         setupAsync(mPreviewSurface, listener);
+     }
+ 
+@@ -442,17 +612,31 @@ public class OneCameraImpl extends AbstractOneCamera {
+             if (mCaptureSession != null) {
+                 mCaptureSession.abortCaptures();
+             }
+-        } catch (CameraAccessException e) {
++        } catch (CameraAccessException | IllegalStateException e) {
+             Log.e(TAG, "Could not abort captures in progress.");
+         }
+         mIsClosed = true;
+-        mCameraThread.quitSafely();
++        cancelAfCaptureWait();
+         mDevice.close();
++        // Run after image callbacks finish copying; close invalidates their ByteBuffers.
++        mCameraHandler.post(() -> {
++            mCaptureImageReader.close();
++            synchronized (mCaptureQueue) {
++                mCaptureQueue.clear();
++            }
++            mCameraThread.quitSafely();
++        });
+     }
+ 
+     public Size[] getSupportedPreviewSizes() {
+         StreamConfigurationMap config = mCharacteristics
+                 .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
++        // Use a near-native binned sensor size so the software ISP does not crop the field of view.
++        for (android.util.Size size : config.getOutputSizes(SurfaceTexture.class)) {
++            if (size.getWidth() == 1272 && size.getHeight() == 720) {
++                return new Size[] { new Size(1272, 720) };
++            }
++        }
+         return Size.convert(config.getOutputSizes(SurfaceTexture.class));
+     }
+ 
+@@ -466,11 +650,10 @@ public class OneCameraImpl extends AbstractOneCamera {
+     }
+ 
+     private void saveJpegPicture(byte[] jpegData, final PhotoCaptureParameters captureParams,
+-            CaptureSession session, CaptureResult result) {
++            CaptureSession session, CaptureResult result, int width, int height) {
+         int heading = captureParams.heading;
+-        int width = 0;
+-        int height = 0;
+-        int rotation = 0;
++        int rotation = CameraUtil.getJpegRotation(captureParams.orientation, mCharacteristics);
++        final long saveStarted = SystemClock.uptimeMillis();
+         ExifInterface exif = null;
+         try {
+             exif = new ExifInterface();
+@@ -481,8 +664,13 @@ public class OneCameraImpl extends AbstractOneCamera {
+             Integer h = exif.getTagIntValue(ExifInterface.TAG_PIXEL_Y_DIMENSION);
+             height = (h == null) ? height : h;
+ 
+-            // Get image rotation from EXIF.
+-            rotation = Exif.getOrientation(exif);
++            if (exif.getTagIntValue(ExifInterface.TAG_ORIENTATION) != null) {
++                rotation = Exif.getOrientation(exif);
++            }
++            exif.setTag(exif.buildTag(ExifInterface.TAG_PIXEL_X_DIMENSION, width));
++            exif.setTag(exif.buildTag(ExifInterface.TAG_PIXEL_Y_DIMENSION, height));
++            exif.setTag(exif.buildTag(ExifInterface.TAG_ORIENTATION,
++                    ExifInterface.getOrientationValueForRotation(rotation)));
+ 
+             // Set GPS heading direction based on sensor, if location is on.
+             if (heading >= 0) {
+@@ -507,6 +695,8 @@ public class OneCameraImpl extends AbstractOneCamera {
+         Futures.addCallback(futureUri, new FutureCallback<Optional<Uri>>() {
+             @Override
+             public void onSuccess(Optional<Uri> uriOptional) {
++                Log.i(TAG, "JPEG save completed in " +
++                        (SystemClock.uptimeMillis() - saveStarted) + " ms");
+                 captureParams.callback.onPictureSaved(uriOptional.orNull());
+             }
+ 
+@@ -542,13 +732,19 @@ public class OneCameraImpl extends AbstractOneCamera {
+      */
+     private void setup(Surface previewSurface, final CaptureReadyCallback listener) {
+         try {
++            if (mIsClosed) return;
+             if (mCaptureSession != null) {
+-                mCaptureSession.abortCaptures();
++                try {
++                    mCaptureSession.stopRepeating();
++                    // createCaptureSession replaces the old session without empty reconfiguration.
++                } catch (IllegalStateException alreadyClosed) {
++                    // A failed session has already been closed by Camera2.
++                }
+                 mCaptureSession = null;
+             }
+             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
+             outputSurfaces.add(previewSurface);
+-            outputSurfaces.add(mCaptureImageReader.getSurface());
++            // Full-resolution output exists only during a still-capture session.
+ 
+             mDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
+ 
+@@ -559,13 +755,25 @@ public class OneCameraImpl extends AbstractOneCamera {
+ 
+                 @Override
+                 public void onConfigured(CameraCaptureSession session) {
++                    if (mIsClosed) { session.close(); return; }
+                     mCaptureSession = session;
++                    mStillSession = false;
+                     mAFRegions = ZERO_WEIGHT_3A_REGION;
+                     mAERegions = ZERO_WEIGHT_3A_REGION;
+-                    mZoomValue = 1f;
+                     mCropRegion = cropRegionForZoom(mZoomValue);
++                    if (mCaptureBusy && mControlAFMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE &&
++                            !sendAfTrigger(CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)) {
++                        listener.onSetupFailed();
++                        return;
++                    }
+                     boolean success = repeatingPreview(null);
+                     if (success) {
++                        if (mCaptureBusy) {
++                            Log.i(TAG, "Preview session ready after capture in " +
++                                    (SystemClock.uptimeMillis() - mTakePictureStartMillis) + " ms");
++                        }
++                        mCaptureBusy = false;
++                        broadcastReadyState(true);
+                         listener.onReadyForCapture();
+                     } else {
+                         listener.onSetupFailed();
+@@ -595,11 +803,9 @@ public class OneCameraImpl extends AbstractOneCamera {
+         builder.set(CaptureRequest.SCALER_CROP_REGION, mCropRegion);
+         builder.set(CaptureRequest.CONTROL_AF_MODE, mControlAFMode);
+         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+-        // Enable face detection
++        builder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, mExposureSetting.get());
+         builder.set(CaptureRequest.STATISTICS_FACE_DETECT_MODE,
+-                CaptureRequest.STATISTICS_FACE_DETECT_MODE_FULL);
+-        builder.set(CaptureRequest.CONTROL_SCENE_MODE,
+-                CaptureRequest.CONTROL_SCENE_MODE_FACE_PRIORITY);
++                CaptureRequest.STATISTICS_FACE_DETECT_MODE_OFF);
+     }
+ 
+     /**
+@@ -635,7 +841,14 @@ public class OneCameraImpl extends AbstractOneCamera {
+             builder = mDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+             builder.addTarget(mPreviewSurface);
+             builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+-            mControlAFMode = CameraMetadata.CONTROL_AF_MODE_AUTO;
++            mControlAFMode = mDefaultAFMode;
++            if (mControlAFMode == CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE) {
++                if (!sendAfTrigger(CameraMetadata.CONTROL_AF_TRIGGER_CANCEL) ||
++                        !sendAfTrigger(CameraMetadata.CONTROL_AF_TRIGGER_START)) return;
++                repeatingPreview(tag);
++                resumeContinuousAFAfterDelay(FOCUS_HOLD_MILLIS);
++                return;
++            }
+             addBaselineCaptureKeysToRequest(builder);
+             builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START);
+             builder.setTag(tag);
+@@ -665,6 +878,7 @@ public class OneCameraImpl extends AbstractOneCamera {
+      * </ol>
+      */
+     private void autofocusStateChangeDispatcher(CaptureResult result) {
++        if (mIsClosed) return;
+         if (result.getFrameNumber() < mLastControlAfStateFrameNumber ||
+                 result.get(CaptureResult.CONTROL_AF_STATE) == null) {
+             return;
+@@ -681,10 +895,12 @@ public class OneCameraImpl extends AbstractOneCamera {
+                 resultAFState == AutoFocusState.PASSIVE_FOCUSED ||
+                 resultAFState == AutoFocusState.PASSIVE_UNFOCUSED;
+ 
+-        if (mTakePictureWhenLensIsStopped && lensIsStopped) {
++        if (mTakePictureWhenLensIsStopped && lensIsStopped &&
++                (!mWaitForAfLock || (result.getFrameNumber() >= mAfCaptureFrameNumber &&
++                 (resultAFState == AutoFocusState.ACTIVE_FOCUSED || resultAFState == AutoFocusState.ACTIVE_UNFOCUSED)))) {
+             // Take the shot.
++            cancelAfCaptureWait();
+             mCameraHandler.post(mTakePictureRunnable);
+-            mTakePictureWhenLensIsStopped = false;
+         }
+ 
+         // Report state change when AF state has changed.
+@@ -696,6 +912,9 @@ public class OneCameraImpl extends AbstractOneCamera {
+ 
+     @Override
+     public void triggerFocusAndMeterAtPoint(float nx, float ny) {
++        mCameraHandler.post(() -> {
++            if (mIsClosed || mCaptureBusy || mStillSession) return;
++
+         int sensorOrientation = mCharacteristics.get(
+                 CameraCharacteristics.SENSOR_ORIENTATION);
+         mAERegions = AutoFocusHelper.aeRegionsForNormalizedCoord(nx, ny, mCropRegion,
+@@ -704,6 +923,7 @@ public class OneCameraImpl extends AbstractOneCamera {
+                 sensorOrientation);
+ 
+         sendAutoFocusTriggerCaptureRequest(RequestTag.TAP_TO_FOCUS);
++            });
+     }
+ 
+     @Override
+@@ -713,9 +933,15 @@ public class OneCameraImpl extends AbstractOneCamera {
+ 
+     @Override
+     public void setZoom(float zoom) {
+-        mZoomValue = zoom;
+-        mCropRegion = cropRegionForZoom(zoom);
+-        repeatingPreview(null);
++        mCameraHandler.post(() -> {
++            if (mIsClosed) return;
++            mZoomValue = zoom;
++            mCropRegion = cropRegionForZoom(zoom);
++            // The JPEG-only session has no preview surface; setup applies the latest zoom.
++            if (!mCaptureBusy && !mStillSession && mCaptureSession != null) {
++                repeatingPreview(null);
++            }
++        });
+     }
+ 
+     @Override
+@@ -759,6 +985,13 @@ public class OneCameraImpl extends AbstractOneCamera {
+      * @param capture the in-flight capture which needs to contain the received
+      * image and capture data
+      */
++    private void restorePreview() {
++        cancelAfCaptureWait();
++        mControlAFMode = mDefaultAFMode;
++        mStillSession = false;
++        if (!mIsClosed) setupAsync(mPreviewSurface, mPreviewReadyCallback);
++    }
++
+     private void onCaptureCompleted(InFlightCapture capture) {
+ 
+         // Experimental support for writing RAW. We do not have a usable JPEG
+@@ -778,11 +1011,16 @@ public class OneCameraImpl extends AbstractOneCamera {
+         } else {
+             // Since this is not an HDR+ session, we will just save the
+             // result.
++            // The JPEG-only session has one completed request and no repeating stream.
++            int width = mCaptureImageReader.getWidth();
++            int height = mCaptureImageReader.getHeight();
+             byte[] imageBytes = acquireJpegBytesAndClose(capture.image);
+-            saveJpegPicture(imageBytes, capture.parameters, capture.session,
+-                    capture.totalCaptureResult);
++            // Placeholder persistence performs synchronous IO; keep it off the camera handler.
++            AsyncTask.SERIAL_EXECUTOR.execute(() ->
++                    saveJpegPicture(imageBytes, capture.parameters, capture.session,
++                            capture.totalCaptureResult, width, height));
+         }
+-        broadcastReadyState(true);
++        restorePreview();
+         capture.parameters.callback.onPictureTaken(capture.session);
+     }
+ 
+@@ -829,13 +1067,16 @@ public class OneCameraImpl extends AbstractOneCamera {
+         } else if (image.getFormat() == ImageFormat.YUV_420_888) {
+             buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 3);
+ 
+-            Log.v(TAG, "Compressing JPEG with software encoder.");
++            long encodeStarted = SystemClock.uptimeMillis();
++            Log.i(TAG, "Compressing JPEG with software encoder.");
+             int numBytes = JpegUtilNative.compressJpegFromYUV420Image(
+                     new AndroidImageProxy(image), buffer, JPEG_QUALITY);
+ 
+             if (numBytes < 0) {
+                 throw new RuntimeException("Error compressing jpeg.");
+             }
++            Log.i(TAG, "JPEG encoding completed in " +
++                    (SystemClock.uptimeMillis() - encodeStarted) + " ms, bytes=" + numBytes);
+             buffer.limit(numBytes);
+         } else {
+             throw new RuntimeException("Unsupported image format.");
+diff --git a/src/com/android/camera/one/v2/SimpleOneCameraFactory.java b/src/com/android/camera/one/v2/SimpleOneCameraFactory.java
+index 38bd5ee..122bfed 100644
+--- a/src/com/android/camera/one/v2/SimpleOneCameraFactory.java
++++ b/src/com/android/camera/one/v2/SimpleOneCameraFactory.java
+@@ -108,6 +108,22 @@ public class SimpleOneCameraFactory implements OneCameraFactory {
+             final Observable<Boolean> hdrSceneSetting,
+             final BurstFacade burstFacade,
+             final FatalErrorHandler fatalErrorHandler) {
++        // SoftISP must not process the still-image resolution on every preview frame.
++        if ("osprey".equals(Build.DEVICE) && Build.VERSION.SDK_INT >= 37
++                && device instanceof com.android.camera.one.v2.camera2proxy.AndroidCameraDeviceProxy) {
++            android.hardware.camera2.CameraManager manager =
++                    (android.hardware.camera2.CameraManager) AndroidContext.instance().get()
++                            .getSystemService(android.content.Context.CAMERA_SERVICE);
++            try {
++                return new OneCameraImpl(
++                        ((com.android.camera.one.v2.camera2proxy.AndroidCameraDeviceProxy) device)
++                                .getCameraDevice(),
++                        manager.getCameraCharacteristics(device.getId()), pictureSize,
++                        flashSetting, exposureSetting);
++            } catch (android.hardware.camera2.CameraAccessException e) {
++                throw new IllegalStateException("Cannot read camera characteristics", e);
++            }
++        }
+         final Lifetime lifetime = new Lifetime();
+ 
+         final ImageReaderProxy imageReader = new CloseWhenDoneImageReader(new LoggingImageReader(
+diff --git a/src/com/android/camera/one/v2/camera2proxy/AndroidCameraDeviceProxy.java b/src/com/android/camera/one/v2/camera2proxy/AndroidCameraDeviceProxy.java
+index 4c67a6d..7d67110 100644
+--- a/src/com/android/camera/one/v2/camera2proxy/AndroidCameraDeviceProxy.java
++++ b/src/com/android/camera/one/v2/camera2proxy/AndroidCameraDeviceProxy.java
+@@ -71,6 +71,10 @@ public class AndroidCameraDeviceProxy implements CameraDeviceProxy {
+         mCameraDevice = cameraDevice;
+     }
+ 
++    public CameraDevice getCameraDevice() {
++        return mCameraDevice;
++    }
++
+     @Override
+     public String getId() {
+         return mCameraDevice.getId();
+diff --git a/src/com/android/camera/session/CaptureSessionImpl.java b/src/com/android/camera/session/CaptureSessionImpl.java
+index a97a423..b6de1aa 100644
+--- a/src/com/android/camera/session/CaptureSessionImpl.java
++++ b/src/com/android/camera/session/CaptureSessionImpl.java
+@@ -322,7 +322,7 @@ public class CaptureSessionImpl implements CaptureSession {
+                 mContentUri = mPlaceholderManager.finishPlaceholder(mPlaceHolder, mLocation,
+                         orientation, exif, data, width, height, FilmstripItemData.MIME_TYPE_JPEG);
+                 mSessionNotifier.notifyTaskDone(mUri);
+-                futureResult.set(Optional.fromNullable(mUri));
++                futureResult.set(Optional.fromNullable(mContentUri));
+ 
+                 if (mImageLifecycleListener != null) {
+                     mImageLifecycleListener.onCapturePersisted();
+diff --git a/src/com/android/camera/ui/PreviewOverlay.java b/src/com/android/camera/ui/PreviewOverlay.java
+index 80286a3..48d16e2 100644
+--- a/src/com/android/camera/ui/PreviewOverlay.java
++++ b/src/com/android/camera/ui/PreviewOverlay.java
+@@ -406,6 +406,7 @@ public class PreviewOverlay extends View
+         public void onScaleEnd(ScaleGestureDetector detector) {
+             mZoomProcessor.hideZoomUI();
+             if (mZoomListener != null) {
++                mZoomListener.onZoomValueChanged(mCurrentRatio);
+                 mZoomListener.onZoomEnd();
+             }
+             invalidate();
+diff --git a/src/com/android/camera/util/CameraUtil.java b/src/com/android/camera/util/CameraUtil.java
+index b6e11b8..1ca5e8b 100644
+--- a/src/com/android/camera/util/CameraUtil.java
++++ b/src/com/android/camera/util/CameraUtil.java
+@@ -37,6 +37,8 @@ import android.hardware.camera2.CameraCharacteristics;
+ import android.hardware.camera2.CameraMetadata;
+ import android.location.Location;
+ import android.net.Uri;
++import android.os.AsyncTask;
++import android.os.Build;
+ import android.os.ParcelFileDescriptor;
+ import android.util.TypedValue;
+ import android.view.OrientationEventListener;
+@@ -61,6 +63,7 @@ import java.text.SimpleDateFormat;
+ import java.util.Date;
+ import java.util.List;
+ import java.util.Locale;
++import java.util.concurrent.RejectedExecutionException;
+ 
+ /**
+  * Collection of utility functions used in this package.
+@@ -750,10 +753,35 @@ public class CameraUtil {
+         }
+     }
+ 
+-    public static void broadcastNewPicture(Context context, Uri uri) {
+-        context.sendBroadcast(new Intent(ACTION_NEW_PICTURE, uri));
+-        // Keep compatibility
+-        context.sendBroadcast(new Intent("com.android.camera.NEW_PICTURE", uri));
++    public static void broadcastNewPicture(Context context, final Uri uri) {
++        if (context == null || uri == null ||
++                !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
++            return;
++        }
++        Context application = context.getApplicationContext();
++        final Context sender = application != null ? application : context;
++        final Runnable notification = new Runnable() {
++            @Override
++            public void run() {
++                Intent picture = new Intent(ACTION_NEW_PICTURE, uri);
++                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
++                    picture.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
++                }
++                try {
++                    sender.sendBroadcast(picture);
++                    // Retain the legacy camera-app signal for existing receivers.
++                    sender.sendBroadcast(new Intent("com.android.camera.NEW_PICTURE", uri));
++                } catch (SecurityException failure) {
++                    Log.w(TAG, "Could not announce the saved picture", failure);
++                }
++            }
++        };
++        // The file is already closed and published; external notification need not block saving.
++        try {
++            AsyncTask.THREAD_POOL_EXECUTOR.execute(notification);
++        } catch (RejectedExecutionException busy) {
++            notification.run();
++        }
+     }
+ 
+     public static void fadeIn(View view, float startAlpha, float endAlpha, long duration) {
+diff --git a/src/com/android/camera/util/ExifUtil.java b/src/com/android/camera/util/ExifUtil.java
+index 5fae249..2a12a24 100644
+--- a/src/com/android/camera/util/ExifUtil.java
++++ b/src/com/android/camera/util/ExifUtil.java
+@@ -167,12 +167,34 @@ public class ExifUtil {
+         Float focalLength = result.get(CaptureResult.LENS_FOCAL_LENGTH);
+         addExifTag(ExifInterface.TAG_FOCAL_LENGTH, rational(focalLength, FOCAL_LENGTH_PRECISION));
+ 
+-        // Flash mode
+-        Integer flashMode = result.get(CaptureResult.FLASH_MODE);
+-        if (flashMode == CaptureResult.FLASH_MODE_OFF) {
+-            addExifTag(ExifInterface.TAG_FLASH, ExifInterface.Flash.DID_NOT_FIRE);
+-        } else {
+-            addExifTag(ExifInterface.TAG_FLASH, ExifInterface.Flash.FIRED);
++        // Requested mode does not prove that the light fired.
++        Integer flashState = result.get(CaptureResult.FLASH_STATE);
++        if (flashState != null) {
++            short flash = ExifInterface.Flash.DID_NOT_FIRE;
++            if (flashState == CaptureResult.FLASH_STATE_UNAVAILABLE) {
++                flash = ExifInterface.Flash.FUNCTION_NO_FUNCTION;
++            } else {
++                if (flashState == CaptureResult.FLASH_STATE_FIRED ||
++                        flashState == CaptureResult.FLASH_STATE_PARTIAL) {
++                    flash |= ExifInterface.Flash.FIRED;
++                }
++                Integer aeMode = result.get(CaptureResult.CONTROL_AE_MODE);
++                Integer flashMode = result.get(CaptureResult.FLASH_MODE);
++                if (aeMode != null && (aeMode == CaptureResult.CONTROL_AE_MODE_ON_AUTO_FLASH ||
++                        aeMode == CaptureResult.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE)) {
++                    flash |= ExifInterface.Flash.MODE_AUTO_MODE;
++                    if (aeMode == CaptureResult.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE) {
++                        flash |= ExifInterface.Flash.RED_EYE_REDUCTION_SUPPORT;
++                    }
++                } else if ((aeMode != null && aeMode == CaptureResult.CONTROL_AE_MODE_ON_ALWAYS_FLASH) ||
++                        (flashMode != null && (flashMode == CaptureResult.FLASH_MODE_SINGLE ||
++                                flashMode == CaptureResult.FLASH_MODE_TORCH))) {
++                    flash |= ExifInterface.Flash.MODE_COMPULSORY_FLASH_FIRING;
++                } else if (flashMode != null && flashMode == CaptureResult.FLASH_MODE_OFF) {
++                    flash |= ExifInterface.Flash.MODE_COMPULSORY_FLASH_SUPPRESSION;
++                }
++            }
++            addExifTag(ExifInterface.TAG_FLASH, flash);
+         }
+ 
+         // White balance
+diff --git a/src/com/android/camera/widget/FilmstripView.java b/src/com/android/camera/widget/FilmstripView.java
+index f6d56c5..d158bac 100644
+--- a/src/com/android/camera/widget/FilmstripView.java
++++ b/src/com/android/camera/widget/FilmstripView.java
+@@ -148,6 +148,7 @@ public class FilmstripView extends ViewGroup {
+      */
+     private static class ViewItem {
+         private static enum RenderSize {
++            NONE,
+             TINY,
+             THUMBNAIL,
+             FULL_RES
+@@ -201,7 +202,18 @@ public class FilmstripView extends ViewGroup {
+             renderTiny();
+         }
+ 
++        public void suspendRendering() {
++            if (mRenderSize != RenderSize.NONE) {
++                mRenderSize = RenderSize.NONE;
++                mData.recycle(mView);
++            }
++        }
++
+         public void renderTiny() {
++            if (!mFilmstrip.isShown()) {
++                suspendRendering();
++                return;
++            }
+             if (mRenderSize != RenderSize.TINY) {
+                 mRenderSize = RenderSize.TINY;
+ 
+@@ -211,6 +223,10 @@ public class FilmstripView extends ViewGroup {
+         }
+ 
+         public void renderThumbnail() {
++            if (!mFilmstrip.isShown()) {
++                suspendRendering();
++                return;
++            }
+             if (mRenderSize != RenderSize.THUMBNAIL) {
+                 mRenderSize = RenderSize.THUMBNAIL;
+ 
+@@ -220,6 +236,10 @@ public class FilmstripView extends ViewGroup {
+         }
+ 
+         public void renderFullRes() {
++            if (!mFilmstrip.isShown()) {
++                suspendRendering();
++                return;
++            }
+             if (mRenderSize != RenderSize.FULL_RES) {
+                 mRenderSize = RenderSize.FULL_RES;
+ 
+@@ -853,6 +873,7 @@ public class FilmstripView extends ViewGroup {
+         }
+         ViewItem item = new ViewItem(index, v, data, this);
+         item.addViewToHierarchy();
++        if (!isShown()) item.suspendRendering();
+         return item;
+     }
+ 
+@@ -874,6 +895,23 @@ public class FilmstripView extends ViewGroup {
+         item.renderThumbnail();
+     }
+ 
++    @Override
++    protected void onVisibilityChanged(View changedView, int visibility) {
++        super.onVisibilityChanged(changedView, visibility);
++        post(() -> {
++            if (mViewItems == null) return;
++            if (isShown()) {
++                renderAllThumbnails();
++                if (inFullScreen() || inZoomView()) renderFullRes(BUFFER_CENTER);
++            } else {
++                // The camera keeps this gallery hidden while capturing.
++                for (ViewItem item : mViewItems) {
++                    if (item != null) item.suspendRendering();
++                }
++            }
++        });
++    }
++
+     private void renderAllThumbnails() {
+         for(int i = 0; i < BUFFER_SIZE; i++) {
+             renderThumbnail(i);
+-- 
+2.47.3
+

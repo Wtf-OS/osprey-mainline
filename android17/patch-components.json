@@ -43,5 +43,23 @@
       "patches/external_swiftshader/01-b5ed51e4ee9b.patch"
     ],
     "publication": "patches-only"
+  },
+  {
+    "path": "hardware/sony/timekeep",
+    "base_commit": "07f619c12dd80052f865c51e5d8c77d860c68c64",
+    "commit": "54a55c0e242cbe532025a27b895dffe02dbe79d6",
+    "patches": [
+      "patches/hardware_sony_timekeep/01-54a55c0e242c.patch"
+    ],
+    "publication": "patches-only"
+  },
+  {
+    "path": "packages/apps/Camera2",
+    "base_commit": "3adb5275b9791c2128e78969579a69f03fe1ac00",
+    "commit": "5dd0a749663be8c1d4ea7e9bf5dfc9baff49375c",
+    "patches": [
+      "patches/packages_apps_Camera2/01-5dd0a749663b.patch"
+    ],
+    "publication": "patches-only"
   }
 ]

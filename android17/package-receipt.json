@@ -1,0 +1,23 @@
+{
+  "android": 17,
+  "sdk": 37,
+  "initramfs": false,
+  "first_stage_sha256": "a490f60dc3a5ba87988ef6da65db3dba5d73029c08e4c45419004835ddbc7d21",
+  "network_capex_sha256": "fcdd7a11f8d64622ce5c75aa8194216df06dcb961503cb0245474a7199a9dc46",
+  "boot_sha256": "06fff43359cab412d55e28f735f5822ef616c84064f85861175fd3418e837267",
+  "system_sha256": "b728380522e7cb8ca0306994c87fc1fed538feeba1584ce4d33fcac94842190b",
+  "kernel_sha256": "89f715089365099a5b4dac9f340b320f83b866d4b6b898d4b783bfda9b8b11ad",
+  "cmdline": "root=/dev/mmcblk0p41 rootwait rootfstype=ext4 ro init=/init androidboot.hardware=osprey console=ttyMSM0,115200n8 console=tty0 loglevel=7 panic=0 cma=32M enforcing=1 selinux=1 androidboot.selinux=enforcing lk2nd.pass-simplefb=1 msm.separate_gpu_kms=1 clk_ignore_unused pd_ignore_unused regulator_ignore_unused",
+  "packages": [
+    {
+      "file": "osprey-lineage-24.0-mainline-a17-EXPERIMENTAL.zip",
+      "sha256": "2e5d2711e504524c9e2970b26691676e4a621a23ae38a48d3a9c13b4ce7edfd2",
+      "bytes": 830532854
+    },
+    {
+      "file": "osprey-a17-rollback.zip",
+      "sha256": "34c5419e7cbccbae76c6c50b0a98dcb09dbc3c1cd92182a8a4f539ea3872a25c",
+      "bytes": 1176
+    }
+  ]
+}
