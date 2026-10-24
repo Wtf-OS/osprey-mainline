@@ -31,6 +31,7 @@ assert clang_version, 'Missing active Android clang version'
 clang = root/'prebuilts/clang/host/linux-x86'/clang_version[1]/'bin'
 assert (product/'system/vendor/bin/hw/android.hardware.gnss-service.osprey').is_file()
 assert (product/'system/vendor/etc/permissions/android.hardware.usb.host.xml').is_file()
+assert (product/'system/vendor/etc/permissions/android.hardware.bluetooth_le.xml').is_file(), 'Missing BLE API feature declaration'
 assert 'functions/ffs.mtp' in (product/'system/etc/init/hw/init.usb.configfs.rc').read_text()
 boot_bytes = boot_input.read_bytes()
 assert len(boot_bytes) == 16*1024*1024
@@ -60,6 +61,7 @@ assert raw.stat().st_size == 2432696320
 
 # Refreshing prebuilts does not update an already built system.img.
 image_inputs = {
+    '/system/vendor/etc/permissions/android.hardware.bluetooth_le.xml': product/'system/vendor/etc/permissions/android.hardware.bluetooth_le.xml',
     '/system/vendor/lib/pixel-power-ext-V1-ndk.so': product/'system/vendor/lib/pixel-power-ext-V1-ndk.so',
     '/system/vendor/lib/pixelatoms-cpp.so': product/'system/vendor/lib/pixelatoms-cpp.so',
     '/init.osprey.rc': product/'root/init.osprey.rc',

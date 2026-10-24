@@ -11,7 +11,7 @@
     "path": "/home/debian/osprey-port/lineage/device/motorola/msm8916-common",
     "project": "device/motorola/msm8916-common",
     "repository": "Wtf-OS/android_device_motorola_msm8916-common",
-    "commit": "fed4d8e1e5593baf4001dcde33a46627be1ce726",
+    "commit": "474b6df81f72696fef9a7527afd39715b77a8040",
     "verified": true,
     "branch": "lineage-24.0-mainline"
   },

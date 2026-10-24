@@ -314,7 +314,7 @@
   <project name="LineageOS/mirror" path="lineage/mirror" revision="f6b6b83895a6ef516d44cd18ca5def663d748194" upstream="main" dest-branch="main" groups="infra" />
   <project name="LineageOS/scripts" path="lineage/scripts" revision="9e1933a61db6d2612a831bfae98345e1c0c13d7e" upstream="main" dest-branch="main" groups="tools" />
   <project name="LineageOS/www" path="lineage/website" revision="77fc21870d5d81c1b7cc17f3b50090ad6dfe1de7" upstream="main" dest-branch="main" groups="infra" />
-  <project name="android_device_motorola_msm8916-common" path="device/motorola/msm8916-common" remote="wtfos-a17" revision="fed4d8e1e5593baf4001dcde33a46627be1ce726" upstream="refs/heads/lineage-24.0-mainline" dest-branch="refs/heads/lineage-24.0-mainline" groups="local::osprey-donor" />
+  <project name="android_device_motorola_msm8916-common" path="device/motorola/msm8916-common" remote="wtfos-a17" revision="474b6df81f72696fef9a7527afd39715b77a8040" upstream="refs/heads/lineage-24.0-mainline" dest-branch="refs/heads/lineage-24.0-mainline" groups="local::osprey-donor" />
   <project name="android_device_motorola_osprey" path="device/motorola/osprey" remote="wtfos-a17" revision="d463660f9fccee819bc8283344b514bd035ec4ff" upstream="refs/heads/lineage-24.0-mainline" dest-branch="refs/heads/lineage-24.0-mainline" groups="local::osprey-donor" />
   <project name="android_kernel_motorola_msm8916" path="kernel/motorola/msm8916" remote="wtfos" revision="89243bedd2ef371f8c6c2fd869e2336c7d787a82" groups="local::osprey-donor" />
   <project name="android_system_tools_dtbtool" path="system/tools/dtbtool" remote="lineage" revision="ffd4bcb0e07a135e9bb65b07e33f6c8f5f1c47b9" groups="local::osprey-donor" />
