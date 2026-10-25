@@ -1,0 +1,28 @@
+From 0aae7d49c584c366a2f7c5e325e52867caea2a72 Mon Sep 17 00:00:00 2001
+From: MrBoombastic <contact@amroz.xyz>
+Date: Sun, 25 Oct 2026 05:26:40 +0100
+Subject: [PATCH] fix(ble): deliver legacy advertising updates
+
+Change-Id: I2c150982a52e4bdce2304abe5b3906dbc9e9bac5
+---
+ .../app/src/com/android/bluetooth/le_scan/ScanController.java | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/android/app/src/com/android/bluetooth/le_scan/ScanController.java b/android/app/src/com/android/bluetooth/le_scan/ScanController.java
+index 36d02759..cf737a86 100644
+--- a/android/app/src/com/android/bluetooth/le_scan/ScanController.java
++++ b/android/app/src/com/android/bluetooth/le_scan/ScanController.java
+@@ -372,8 +372,10 @@ public class ScanController {
+             final ScanSettings settings = client.getSettings();
+             final byte[] scanRecordData;
+             boolean isScanResponse = (eventType & ET_SCAN_RESPONSE_MASK) != 0;
++            // Legacy advertisers may update service data without another SCAN_RSP.
+             boolean requiresScanResponse =
+-                    (eventType & ET_SCANNABLE_MASK) != 0
++                    !settings.getLegacy()
++                            && (eventType & ET_SCANNABLE_MASK) != 0
+                             && !isScanResponse
+                             && !mIsMsftAdvMonitorEnabled;
+ 
+-- 
+2.47.3

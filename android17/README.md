@@ -9,9 +9,9 @@ on their existing branches.
 - `component-revisions.json`: verified Wtf-OS repository commits, including
   the device trees, graphics, Wi-Fi, BPF integration, kernel and libcamera.
 - `patch-components.json` and `patches/`: Soong, XMP Toolkit, Highway, Skia and
-  SwiftShader, Camera2 and TimeKeep changes. No repositories were created for
+  SwiftShader, Camera2, TimeKeep and Bluetooth scan changes. No repositories were created for
   these dependencies.
-- `pinned-manifest.xml`: exact Android source revisions. The seven patch-only
+- `pinned-manifest.xml`: exact Android source revisions. The eight patch-only
   projects are pinned to their upstream base, not to unpublished commits.
 - `kernel.config` and `kernel-modules.json`: kernel configuration and the exact
   module selection, including the external backlight driver.
@@ -23,7 +23,7 @@ After syncing the pinned manifest, apply each patch in the listed order:
 git -C build/soong am /path/to/osprey-mainline/android17/patches/build_soong/*.patch
 ```
 
-Repeat for all seven paths from `patch-components.json`. Check the local HEAD
+Repeat for all eight paths from `patch-components.json`. Check the local HEAD
 against the recorded base before applying. The kernel and libcamera are
 separate checkouts at the commits in `component-revisions.json`.
 

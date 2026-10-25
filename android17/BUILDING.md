@@ -1,7 +1,7 @@
 # Android 17 mainline build
 
 Run `bash /path/to/osprey-mainline/android17/build.sh` from WSL after syncing
-the pinned manifest and applying all seven patch queues. Keep the kernel checkout at
+the pinned manifest and applying all eight patch queues. Keep the kernel checkout at
 `~/osprey-port/linux-mainline-osprey`, Android at `~/osprey-port/lineage`, and
 lk2nd at `~/osprey-port/lk2nd`.
 

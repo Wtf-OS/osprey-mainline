@@ -61,6 +61,7 @@ assert raw.stat().st_size == 2432696320
 
 # Refreshing prebuilts does not update an already built system.img.
 image_inputs = {
+    '/system/apex/com.android.bt.capex': product/'system/apex/com.android.bt.capex',
     '/system/vendor/etc/permissions/android.hardware.bluetooth_le.xml': product/'system/vendor/etc/permissions/android.hardware.bluetooth_le.xml',
     '/system/vendor/lib/pixel-power-ext-V1-ndk.so': product/'system/vendor/lib/pixel-power-ext-V1-ndk.so',
     '/system/vendor/lib/pixelatoms-cpp.so': product/'system/vendor/lib/pixelatoms-cpp.so',

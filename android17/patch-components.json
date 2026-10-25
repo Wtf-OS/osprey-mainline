@@ -61,5 +61,14 @@
       "patches/packages_apps_Camera2/01-5dd0a749663b.patch"
     ],
     "publication": "patches-only"
+  },
+  {
+    "path": "packages/modules/Bluetooth",
+    "base_commit": "f2d29ab2d80ea179285cd818b756b44234d2bbb4",
+    "commit": "0aae7d49c584c366a2f7c5e325e52867caea2a72",
+    "patches": [
+      "patches/packages_modules_Bluetooth/01-0aae7d49c584.patch"
+    ],
+    "publication": "patches-only"
   }
 ]
